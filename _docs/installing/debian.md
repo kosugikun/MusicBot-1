@@ -22,7 +22,7 @@ sudo apt-get install python3.5 -y
 
 # 自分の好きなディレクトリにMusicBot JPを複製
 cd ~
-git clone https://github.com/Just-Some-Bots/MusicBot.git MusicBot -b master
+git clone https://github.com/kosugikun/MusicBot.git MusicBot -b master
 cd MusicBot
 
 # 依存関係のインストール
