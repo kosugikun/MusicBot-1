@@ -22,7 +22,7 @@ brew install libsodium
 
 # MusicBot JPをクローン
 cd desktop
-git clone https://github.com/Just-Some-Bots/MusicBot.git MusicBot -b master 
+git clone https://github.com/kosugikun/MusicBot.git MusicBot -b master 
 
 # Pythonの依存関係をインストール
 cd MusicBot
