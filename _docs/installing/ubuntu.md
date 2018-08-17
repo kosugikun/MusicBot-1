@@ -48,7 +48,7 @@ sudo apt-get install git ffmpeg libopus-dev libffi-dev libsodium-dev python3-pip
 sudo apt-get upgrade -y
 
 # MusicBotを入れたいディテクトリの中に、MusicBotをクローン
-git clone https://github.com/Just-Some-Bots/MusicBot.git ~/MusicBot -b master
+git clone https://github.com/kosugikun/MusicBot.git ~/MusicBot -b master
 cd ~/MusicBot
 
 # Pythonの依存関係をインストール
