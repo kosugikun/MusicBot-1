@@ -64,4 +64,4 @@ sudo python3.5 -m pip install -U -r requirements.txt
 ~~~
 {: title="CentOS 7.4" }
 
-すべてが完了したら、ボットを [設定]({{ site.baseurl }}/using/configuration)し、`sudo ./run.sh`を実行することができます。
+上記が完了したら、ボットのコンフィグを設定し`sudo ./run.sh`を実行すると、起動できます。
