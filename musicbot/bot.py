@@ -1222,7 +1222,7 @@ class MusicBot(discord.Client):
         """埋め込みのための基本テンプレートを提供する"""
         e = discord.Embed()
         e.colour = 7506394
-        e.set_footer(text='kosugikun/MusicBot JP ({})'.format(BOTVERSION), icon_url='https://i.imgur.com/gFHBoZA.png')
+        e.set_footer(text='kosugikun/MusicBot JP ({})'.format(BOTVERSION), icon_url='https://mcpenano.net/icon3.png')
         e.set_author(name=self.user.name, url='https://github.com/kosugikun/MusicBot', icon_url=self.user.avatar_url)
         return e
 
@@ -1764,7 +1764,7 @@ class MusicBot(discord.Client):
 
             raise exceptions.CommandError(basetext, expire_in=30)
 
-        return Response(self.str.get('cmd-play-playlist-reply-secs', "エンキューされた{0}曲が{1}秒後に再生されます").format(
+        return Response(self.str.get('cmd-play-playlist-reply-secs', "エンキューされた{0}曲は、{1}秒で処理されました。").format(
             songs_added, fixg(ttime, 1)), delete_after=30)
 
     async def cmd_stream(self, player, channel, author, permissions, song_url):
