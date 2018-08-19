@@ -15,7 +15,7 @@ discordWidget.init({
   join: true,
   alphabetical: true,
   theme: 'dark',
-  hideChannels: ['MusicBot JP'],
+  hideChannels: ['Channel Name 1'],
   showAllUsers: true,
   allUsersDefaultState: false,
   showNick: true
