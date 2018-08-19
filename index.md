@@ -17,7 +17,7 @@ discordWidget.init({
   theme: 'dark',
   hideChannels: ['Channel Name 1', 'Channel Name 2'],
   showAllUsers: true,
-  allUsersDefaultState: true,
+  allUsersDefaultState: false,
   showNick: true
 });
 discordWidget.render();
