@@ -13,12 +13,12 @@ discordWidget.init({
   serverId: '414411462207995904',
   title: 'MusicBot JP',
   join: true,
-  alphabetical: false,
-  theme: 'light',
+  alphabetical: true,
+  theme: 'dark',
   hideChannels: ['Channel Name 1', 'Channel Name 2'],
   showAllUsers: true,
   allUsersDefaultState: true,
-  showNick: false
+  showNick: true
 });
 discordWidget.render();
 </script>
