@@ -55,7 +55,7 @@ def main():
 
     try:
         from musicbot.constants import VERSION
-        print('MusicBotはバージョン{0}です'.format(VERSION))
+        print('MusicBot JPはバージョン{0}です'.format(VERSION))
     except Exception:
         pass
 
