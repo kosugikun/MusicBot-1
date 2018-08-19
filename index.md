@@ -23,4 +23,4 @@ discordWidget.init({
 discordWidget.render();
 </script>
 
-<iframe src="https://mcpenano.net/discord/"  style="width: 750px;"></iframe>
+<iframe src="https://mcpenano.net/discord/" height="auto"></iframe>
