@@ -633,8 +633,8 @@ class MusicBot(discord.Client):
             author_perms = self.permissions.for_user(author)
             
             if author not in player.voice_client.channel.voice_members and author_perms.skip_when_absent:
-                newmsg = '`%s`を次の曲をスキップする:`%s`は音声ではなくキューに入れられます`%s`によって追加された' % (
-                    player.voice_client.channel.name, entry.title, entry.meta['author'].name)
+                newmsg = '`%s`の次の曲をスキップする：`%s`によって追加された `%s`は音声ではなくキューに入れられます' % (
+                    player.voice_client.channel.name, entry.meta['author'].name, entry.title)
                 player.skip()
             elif self.config.now_playing_mentions:
                 newmsg = '%s  - あなたの曲`%s`は現在、`%s`で再生中です！' % (
@@ -1222,7 +1222,7 @@ class MusicBot(discord.Client):
         """埋め込みのための基本テンプレートを提供する"""
         e = discord.Embed()
         e.colour = 7506394
-        e.set_footer(text='kosugikun/MusicBot JP ({})'.format(BOTVERSION), icon_url='https://mcpenano.net/icon3.png')
+        e.set_footer(text='kosugikun/MusicBot JP ({})'.format(BOTVERSION), icon_url='https://i.imgur.com/gFHBoZA.png')
         e.set_author(name=self.user.name, url='https://github.com/kosugikun/MusicBot', icon_url=self.user.avatar_url)
         return e
 

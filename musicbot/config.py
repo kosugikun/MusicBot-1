@@ -227,13 +227,13 @@ class Config:
 
         if self.owner_id == bot.user.id:
             raise HelpfulError(
-                 "Your OwnerID is incorrect or you've used the wrong credentials.",
+                 "オーナーIDが間違っているか、間違った資格情報を使用しています。",
 
-                "The bot's user ID and the id for OwnerID is identical. "
-                "This is wrong. The bot needs a bot account to function, "
-                "meaning you cannot use your own account to run the bot on. "
-                "The OwnerID is the id of the owner, not the bot. "
-                "Figure out which one is which and use the correct information.",
+                "ボットのユーザーIDとOwnerIDのIDは同じです。 "
+                "これは間違っています。ボットは機能するにはボットアカウントが必要ですが、 "
+                "ボットを実行するために自分のアカウントを使用することはできません。 "
+                "OwnerIDは、ボットではなくオーナーのIDです。 "
+                "どちらが正しいのかを把握し、正しい情報を使用してください。",
 
                 preface=self._confpreface2
             )
@@ -335,7 +335,7 @@ class ConfigDefaults:
     options_file = 'config/options.ini'
     blacklist_file = 'config/blacklist.txt'
     auto_playlist_file = 'config/autoplaylist.txt'  # this will change when I add playlists
-    i18n_file = 'config/i18n/en.json'
+    i18n_file = 'config/i18n/ja.json'
 
 setattr(ConfigDefaults, codecs.decode(b'ZW1haWw=', '\x62\x61\x73\x65\x36\x34').decode('ascii'), None)
 setattr(ConfigDefaults, codecs.decode(b'cGFzc3dvcmQ=', '\x62\x61\x73\x65\x36\x34').decode('ascii'), None)

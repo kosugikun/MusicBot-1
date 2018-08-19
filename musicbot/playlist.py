@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 
 class Playlist(EventEmitter, Serializable):
     """
-        A playlist is manages the list of songs that will be played.
+        プレイリストは、再生される曲のリストを管理します。
     """
 
     def __init__(self, bot):
@@ -124,7 +124,7 @@ class Playlist(EventEmitter, Serializable):
 
             except DownloadError as e:
                 if e.exc_info[0] == UnsupportedError:  # ytdl doesn't like it but its probably a stream
-                    log.debug("Assuming content is a direct stream")
+                    log.debug("コンテンツが直接ストリームであると仮定します")
 
                 elif e.exc_info[0] == URLError:
                     if os.path.exists(os.path.abspath(song_url)):
@@ -296,7 +296,7 @@ class Playlist(EventEmitter, Serializable):
                 baditems += 1
 
         if baditems:
-            log.info("Skipped {} bad entries".format(baditems))
+            log.info("不良エントリ {}をスキップしました。".format(baditems))
 
         return gooditems
 

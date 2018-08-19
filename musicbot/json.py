@@ -5,7 +5,7 @@ log = logging.getLogger(__name__)
 
 class Json:
     def __init__(self, json_file):
-        log.debug('Init JSON obj with {0}'.format(json_file))
+        log.debug('{0}のJSONオブジェクトを初期化する'.format(json_file))
         self.file = json_file
         self.data = self.parse()
 

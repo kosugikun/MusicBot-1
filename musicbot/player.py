@@ -305,7 +305,7 @@ class MusicPlayer(EventEmitter, Serializable):
                 try:
                     entry = await self.playlist.get_next_entry()
                 except:
-                    log.warning("Failed to get entry, retrying", exc_info=True)
+                    log.warning("エントリを取得できませんでした。再試行します。", exc_info=True)
                     self.loop.call_later(0.1, self.play)
                     return
 
@@ -370,7 +370,7 @@ class MusicPlayer(EventEmitter, Serializable):
                 self._current_player._connected.set()
 
     async def websocket_check(self):
-        log.voicedebug("Starting websocket check loop for {}".format(self.voice_client.channel.server))
+        log.voicedebug("{}用のWebSocketチェックループの開始".format(self.voice_client.channel.server))
 
         while not self.is_dead:
             try:
@@ -428,7 +428,7 @@ class MusicPlayer(EventEmitter, Serializable):
         try:
             return json.loads(raw_json, object_hook=Serializer.deserialize)
         except:
-            log.exception("Failed to deserialize player")
+            log.exception("プレーヤーをデシリアライズできませんでした")
 
 
     @property
