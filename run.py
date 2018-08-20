@@ -199,6 +199,9 @@ def sanity_checks(optional=True):
 
     # Make our folders if needed
     req_ensure_folders()
+    
+    # For rewrite only
+    req_check_deps()
 
     log.info("必要なチェックが完了しました。")
 
@@ -257,7 +260,17 @@ def req_ensure_py3():
         log.critical("Python 3.5以降は見つかりませんでした。 Python 3.5を使ってボットを実行してください")
         bugger_off()
 
-
+def req_check_deps():
+     try:
+         import discord
+         if discord.version_info.major < 1:
+             log.critical("This version of MusicBot requires a newer version of discord.py (1.0+). Your version is {0}. Try running update.py.".format(discord.__version__))
+             bugger_off()
+     except ImportError:
+         # if we can't import discord.py, an error will be thrown later down the line anyway
+         pass
+    
+    
 def req_ensure_encoding():
     log.info("コンソールエンコーディングの確認")
 
@@ -331,6 +344,11 @@ def main():
     finalize_logging()
 
     import asyncio
+    
+    
+    if sys.platform == 'win32':
+         loop = asyncio.ProactorEventLoop()  # needed for subprocesses
+         asyncio.set_event_loop(loop)
 
     tried_requirementstxt = False
     tryagain = True
