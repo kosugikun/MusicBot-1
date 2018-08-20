@@ -66,21 +66,8 @@ def main():
     except subprocess.CalledProcessError:
         raise OSError("ボットを更新できませんでした。 git pullを自分で実行する必要があります。")
 
-    print("依存関係を更新しようとしています...")
-
-    try:
-        subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-U', '-r', 'requirements.txt'], shell=True)
-    except subprocess.CalledProcessError:
-        raise OSError("依存関係を更新できませんでした。 '{0} -m pip install -U -r requirements.txt'を実行する必要があります。".format(sys.executable))
-
-
-    try:
-        from musicbot.constants import VERSION
-        print('MusicBot JPはバージョン{0}です'.format(VERSION))
-    except Exception:
-        pass
-
-    print("完了!")
+   update_deps()
+     finalize()
 
 if __name__ == '__main__':
     main()
