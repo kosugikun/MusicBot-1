@@ -67,7 +67,7 @@ def main():
         raise OSError("ボットを更新できませんでした。 git pullを自分で実行する必要があります。")
 
    update_deps()
-     finalize()
+   finalize()
 
 if __name__ == '__main__':
     main()
