@@ -8,6 +8,23 @@ def y_n(q):
         if ri.lower() in ['yes', 'y']: return True
         elif ri.lower() in ['no', 'n']: return False
 
+        def update_deps():
+     print("Attempting to update dependencies...")
+
+     try:
+         subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-U', '-r', 'requirements.txt'], shell=True)
+     except subprocess.CalledProcessError:
+         raise OSError("Could not update dependencies. You will need to run '{0} -m pip install -U -r requirements.txt' yourself.".format(sys.executable))
+
+ def finalize():
+     try:
+         from musicbot.constants import VERSION
+         print('The current MusicBot version is {0}.'.format(VERSION))
+     except Exception:
+         print('There was a problem fetching your current bot version. The installation may not have completed correctly.')
+
+     print("Done!")
+    
 def main():
     print('起動...')
 
@@ -28,17 +45,21 @@ def main():
     sp = subprocess.check_output('git status --porcelain', shell=True, universal_newlines=True)
     if sp:
         oshit = y_n('Gitによって追跡されるファイル（例えば、botのソースファイル）を変更しました。\n'
-                    '私たちはあなたのためにあなたのクリーンバージョンにあなたのフォルダをリセットしようとすることができます。持続する？')
+                    'Should we try resetting the repo? You will lose local modifications.')
         if oshit:
             try:
                 subprocess.check_call('git reset --hard', shell=True)
             except subprocess.CalledProcessError:
                 raise OSError("ディレクトリをクリーンな状態にリセットできませんでした。")
         else:
-            print('はい。今すぐ更新プロセスをキャンセルします。')
+            wowee = y_n('OK, skipping bot update. Do you still want to update dependencies?')
+             if wowee:
+                 update_deps()
+             else:
+                 finalize()
             return
 
-    print("Gitを使ってボットを更新しようとしています...")
+    print("Checking if we need to update the bot...")
 
     try:
         subprocess.check_call('git pull', shell=True)
