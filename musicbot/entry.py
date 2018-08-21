@@ -40,7 +40,7 @@ class BasePlaylistEntry(Serializable):
 
     def get_ready_future(self):
         """
-        曲を再生する準備ができたら起動する未来を返します。未来は結果（エントリー）または例外
+        曲を再生する準備ができたら起動する未来を返します。未来は結果(エントリー)または例外
         なぜ曲のダウンロードに失敗したのかについて。
         """
         future = asyncio.Future()
@@ -53,12 +53,12 @@ class BasePlaylistEntry(Serializable):
             asyncio.ensure_future(self._download())
             self._waiting_futures.append(future)
 
-        log.debug('Created future for {0}'.format(self.filename))
+        log.debug('{0}の行末を作りました'.format(self.filename))
         return future
 
     def _for_each_future(self, cb):
         """
-            取り消されない未来ごとに `cb`を呼び出します。発生した可能性のあるエラーを吸収して記録します。
+            キャンセルされない行末ごとに `cb`を呼び出します。発生した可能性のあるエラーを吸収して記録します。
         """
         futures = self._waiting_futures
         self._waiting_futures = []
@@ -111,7 +111,7 @@ class URLPlaylistEntry(BasePlaylistEntry):
                     'name': obj.name
                 } for name, obj in self.meta.items() if obj
             },
-             'aoptions': self.aoptions
+            'aoptions': self.aoptions
         })
 
     @classmethod
@@ -133,14 +133,14 @@ class URLPlaylistEntry(BasePlaylistEntry):
                 meta['channel'] = playlist.bot.get_channel(data['meta']['channel']['id'])
 
             if 'author' in data['meta']:
-                meta['author'] = meta['channel'].server.get_member(data['meta']['author']['id'])
+                meta['author'] = meta['channel'].guild.get_member(data['meta']['author']['id'])
 
             entry = cls(playlist, url, title, duration, expected_filename, **meta)
             entry.filename = filename
 
             return entry
         except Exception as e:
-            log.error("読み込めませんでした {}".format(cls.__name__), exc_info=e)
+            log.error("{}を読み込めませんでした".format(cls.__name__), exc_info=e)
 
     # noinspection PyTypeChecker
     async def _download(self):
@@ -197,10 +197,10 @@ class URLPlaylistEntry(BasePlaylistEntry):
 
                 if expected_fname_base in ldir:
                     self.filename = os.path.join(self.download_folder, expected_fname_base)
-                    log.info("キャッシュをダウンロード:{}".format(self.url))
+                    log.info("キャッシュをダウンロード: {}".format(self.url))
 
                 elif expected_fname_noex in flistdir:
-                    log.info("ダウンロードしたキャッシュ済み(別の拡張子) :{}".format(self.url))
+                    log.info("キャッシュはダウンロード済み(別の拡張子): {}".format(self.url))
                     self.filename = os.path.join(self.download_folder, ldir[flistdir.index(expected_fname_noex)])
                     log.debug("予想される{}、{}があります".format(
                         self.expected_filename.rsplit('.', 1)[-1],
@@ -208,19 +208,19 @@ class URLPlaylistEntry(BasePlaylistEntry):
                     ))
                 else:
                     await self._really_download()
-                    
-                    if self.playlist.bot.config.use_experimental_equalization:
-                 try:
-                     mean, maximum = await self.get_mean_volume(self.filename)
-                     aoptions = '-af "volume={}dB"'.format((maximum * -1))
-                 except Exception as e:
-                     log.error('There as a problem with working out EQ, likely caused by a strange installation of FFmpeg. '
-                               'This has not impacted the ability for the bot to work, but will mean your tracks will not be equalised.')
-                     aoptions = "-vn"
-             else:
-                 aoptions = "-vn"
 
-             self.aoptions = aoptions
+            if self.playlist.bot.config.use_experimental_equalization:
+                try:
+                    mean, maximum = await self.get_mean_volume(self.filename)
+                    aoptions = '-af "volume={}dB"'.format((maximum * -1))
+                except Exception as e:
+                    log.error('FFmpegの奇妙なインストールが原因で、EQの作業に問題が発生している可能性があります。 '
+                              'これはボットの機能に影響を与えませんでしたが、トラックが均等化されないことを意味します。')
+                    aoptions = "-vn"
+            else:
+                aoptions = "-vn"
+
+            self.aoptions = aoptions
 
             # Trigger ready callbacks.
             self._for_each_future(lambda future: future.set_result(self))
@@ -231,58 +231,58 @@ class URLPlaylistEntry(BasePlaylistEntry):
 
         finally:
             self._is_downloading = False
-            
-            async def run_command(self, cmd):
-         p = await asyncio.create_subprocess_shell(cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-         log.debug('Starting asyncio subprocess ({0}) with command: {1}'.format(p, cmd))
-         stdout, stderr = await p.communicate()
-         return stdout + stderr
 
-     def get(self, program):
-         def is_exe(fpath):
-             found = os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-             if not found and sys.platform == 'win32':
-                 fpath = fpath + ".exe"
-                 found = os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-             return found
+    async def run_command(self, cmd):
+        p = await asyncio.create_subprocess_shell(cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        log.debug('コマンド{1}を使用してasyncioサブプロセス({0})を開始しています。'.format(p, cmd))
+        stdout, stderr = await p.communicate()
+        return stdout + stderr
 
-         fpath, __ = os.path.split(program)
-         if fpath:
-             if is_exe(program):
-                 return program
-         else:
-             for path in os.environ["PATH"].split(os.pathsep):
-                 path = path.strip('"')
-                 exe_file = os.path.join(path, program)
-                 if is_exe(exe_file):
-                     return exe_file
+    def get(self, program):
+        def is_exe(fpath):
+            found = os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+            if not found and sys.platform == 'win32':
+                fpath = fpath + ".exe"
+                found = os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+            return found
 
-         return None
+        fpath, __ = os.path.split(program)
+        if fpath:
+            if is_exe(program):
+                return program
+        else:
+            for path in os.environ["PATH"].split(os.pathsep):
+                path = path.strip('"')
+                exe_file = os.path.join(path, program)
+                if is_exe(exe_file):
+                    return exe_file
 
-     async def get_mean_volume(self, input_file):
-         log.debug('Calculating mean volume of {0}'.format(input_file))
-         cmd = '"' + self.get('ffmpeg') + '" -i "' + input_file + '" -af "volumedetect" -f null /dev/null'
-         output = await self.run_command(cmd)
-         output = output.decode("utf-8")
-         # print('----', output)
-         mean_volume_matches = re.findall(r"mean_volume: ([\-\d\.]+) dB", output)
-         if (mean_volume_matches):
-             mean_volume = float(mean_volume_matches[0])
-         else:
-             mean_volume = float(0)
+        return None
 
-         max_volume_matches = re.findall(r"max_volume: ([\-\d\.]+) dB", output)
-         if (max_volume_matches):
-             max_volume = float(max_volume_matches[0])
-         else:
-             max_volume = float(0)
+    async def get_mean_volume(self, input_file):
+        log.debug('{0}の平均容積を計算します。'.format(input_file))
+        cmd = '"' + self.get('ffmpeg') + '" -i "' + input_file + '" -af "volumedetect" -f null /dev/null'
+        output = await self.run_command(cmd)
+        output = output.decode("utf-8")
+        # print('----', output)
+        mean_volume_matches = re.findall(r"mean_volume: ([\-\d\.]+) dB", output)
+        if (mean_volume_matches):
+            mean_volume = float(mean_volume_matches[0])
+        else:
+            mean_volume = float(0)
 
-         log.debug('Calculated mean volume as {0}'.format(mean_volume))
-         return mean_volume, max_volume
+        max_volume_matches = re.findall(r"max_volume: ([\-\d\.]+) dB", output)
+        if (max_volume_matches):
+            max_volume = float(max_volume_matches[0])
+        else:
+            max_volume = float(0)
+
+        log.debug('計算された平均容積は{0}'.format(mean_volume))
+        return mean_volume, max_volume
 
     # noinspection PyShadowingBuiltins
     async def _really_download(self, *, hash=False):
-        log.info("ダウンロード開始:{}".format(self.url))
+        log.info("ダウンロード開始: {}".format(self.url))
 
         retry = True
         while retry:
@@ -369,7 +369,7 @@ class StreamPlaylistEntry(BasePlaylistEntry):
 
             return entry
         except Exception as e:
-            log.error("読み込めませんでした {}".format(cls.__name__), exc_info=e)
+            log.error("{}を読み込めませんでした".format(cls.__name__), exc_info=e)
 
     # noinspection PyMethodOverriding
     async def _download(self, *, fallback=False):

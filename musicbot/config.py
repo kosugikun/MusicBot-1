@@ -121,7 +121,7 @@ class Config:
                 preface=self._confpreface
             )
 
-        log.info('i18nを使う:{0}'.format(self.i18n_file))
+        log.info('i18nを使用:{0}'.format(self.i18n_file))
 
         if not self._login_token:
             raise HelpfulError(
@@ -215,17 +215,17 @@ class Config:
         if self.owner_id == 'auto':
             if not bot.user.bot:
                 raise HelpfulError(
-                    "Invalid parameter \"auto\" for OwnerID option.",
+                    "OwnerIDオプションに無効なパラメータ\"auto\"があります。",
 
-                    "Only bot accounts can use the \"auto\" option.  Please "
-                    "set the OwnerID in the config.",
+                    "ボットアカウントだけが\"auto\"オプションを使用できます。お願いします "
+                    "configにOwnerIDを設定してください。",
 
                     preface=self._confpreface2
                 )
 
             self.owner_id = bot.cached_app_info.owner.id
             log.debug("API経由でオーナーIDを取得しました")
-            else:
+        else:
              self.owner_id = int(self.owner_id)
 
         if self.owner_id == bot.user.id:
@@ -254,7 +254,7 @@ class Config:
 
             elif os.path.isfile('config/example_options.ini'):
                 shutil.copy('config/example_options.ini', self.config_file)
-                log.warning('Options file not found, copying example_options.ini')
+                log.warning('オプションファイルが見つからない、example_options.iniをコピーする')
 
             else:
                 raise HelpfulError(
@@ -276,7 +276,7 @@ class Config:
 
             except ValueError: # Config id value was changed but its not valid
                 raise HelpfulError(
-                    '所有者IDの値「{}」が無効です。設定を読み込めません。'.format(
+                    'オーナーIDの値「{}」が無効です。設定を読み込めません。'.format(
                         c.get('Permissions', 'OwnerID', fallback=None)
                     ),
                     "OwnerIDオプションにはユーザーIDまたは 'auto'が必要です。"
@@ -291,7 +291,7 @@ class Config:
         if not os.path.exists(self.auto_playlist_file):
             if os.path.exists('config/_autoplaylist.txt'):
                 shutil.copy('config/_autoplaylist.txt', self.auto_playlist_file)
-                log.debug("Copying _autoplaylist.txt to autoplaylist.txt")
+                log.debug("_autoplaylist.txtをautoplaylist.txtにコピーします。")
             else:
                 log.warning("自動再生リストファイルが見つかりませんでした。")
 

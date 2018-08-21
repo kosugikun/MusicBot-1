@@ -8,7 +8,7 @@ def y_n(q):
         if ri.lower() in ['yes', 'y']: return True
         elif ri.lower() in ['no', 'n']: return False
 
-        def update_deps():
+def update_deps():
      print("Attempting to update dependencies...")
 
      try:
@@ -16,7 +16,7 @@ def y_n(q):
      except subprocess.CalledProcessError:
          raise OSError("Could not update dependencies. You will need to run '{0} -m pip install -U -r requirements.txt' yourself.".format(sys.executable))
 
- def finalize():
+def finalize():
      try:
          from musicbot.constants import VERSION
          print('The current MusicBot version is {0}.'.format(VERSION))
@@ -53,9 +53,9 @@ def main():
                 raise OSError("ディレクトリをクリーンな状態にリセットできませんでした。")
         else:
             wowee = y_n('OK, skipping bot update. Do you still want to update dependencies?')
-             if wowee:
+            if wowee:
                  update_deps()
-             else:
+            else:
                  finalize()
             return
 
@@ -66,8 +66,8 @@ def main():
     except subprocess.CalledProcessError:
         raise OSError("ボットを更新できませんでした。 git pullを自分で実行する必要があります。")
 
-   update_deps()
-   finalize()
+update_deps()
+finalize()
 
 if __name__ == '__main__':
     main()
