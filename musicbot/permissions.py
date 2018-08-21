@@ -20,6 +20,7 @@ class PermissionsDefaults:
     MaxSongs = 0
     MaxSongLength = 0
     MaxPlaylistLength = 0
+    MaxSearchItems = 10
 
     AllowPlaylists = True
     InstaSkip = False
@@ -54,7 +55,7 @@ class Permissions:
 
         # Create a fake section to fallback onto the permissive default values to grant to the owner
         # noinspection PyTypeChecker
-        owner_group = PermissionGroup("Owner (auto)", configparser.SectionProxy(self.config, None))
+        owner_group = PermissionGroup("オーナー (auto)", configparser.SectionProxy(self.config, None))
         if hasattr(grant_all, '__iter__'):
             owner_group.user_list = set(grant_all)
 
@@ -63,7 +64,7 @@ class Permissions:
     async def async_validate(self, bot):
         log.debug("権限の検証中...")
 
-        og = discord.utils.get(self.groups, name="Owner (auto)")
+        og = discord.utils.get(self.groups, name="オーナー (auto)")
         if 'auto' in og.user_list:
             log.debug("自動所有者グループの修正")
             og.user_list = {bot.config.owner_id}
@@ -113,6 +114,7 @@ class PermissionGroup:
         self.max_songs = section_data.get('MaxSongs', fallback=PermissionsDefaults.MaxSongs)
         self.max_song_length = section_data.get('MaxSongLength', fallback=PermissionsDefaults.MaxSongLength)
         self.max_playlist_length = section_data.get('MaxPlaylistLength', fallback=PermissionsDefaults.MaxPlaylistLength)
+        self.max_search_items = section_data.get('MaxSearchItems', fallback=PermissionsDefaults.MaxSearchItems)
 
         self.allow_playlists = section_data.get('AllowPlaylists', fallback=PermissionsDefaults.AllowPlaylists)
         self.instaskip = section_data.get('InstaSkip', fallback=PermissionsDefaults.InstaSkip)
@@ -135,10 +137,10 @@ class PermissionGroup:
             self.ignore_non_voice = set(self.ignore_non_voice.lower().split())
 
         if self.granted_to_roles:
-            self.granted_to_roles = set(self.granted_to_roles.split())
+            self.granted_to_roles = set([int(x) for x in self.granted_to_roles.split()])
 
         if self.user_list:
-            self.user_list = set(self.user_list.split())
+            self.user_list = set([int(x) for x in self.user_list.split()])
 
         if self.extractors:
             self.extractors = set(self.extractors.split())
@@ -157,6 +159,15 @@ class PermissionGroup:
             self.max_playlist_length = max(0, int(self.max_playlist_length))
         except:
             self.max_playlist_length = PermissionsDefaults.MaxPlaylistLength
+                                  
+        try:
+             self.max_search_items = max(0, int(self.max_search_items))
+        except:
+             self.max_search_items = PermissionsDefaults.MaxSearchItems
+
+        if int(self.max_search_items) > 100:
+             log.warning('最大検索項目は100より大きくすることはできません。100以下に設定してください。')
+             self.max_search_items = 100
 
         self.allow_playlists = configparser.RawConfigParser.BOOLEAN_STATES.get(
             self.allow_playlists, PermissionsDefaults.AllowPlaylists

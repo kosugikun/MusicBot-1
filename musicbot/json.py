@@ -16,6 +16,7 @@ class Json:
                 parsed = json.load(data)
             except Exception:
                 log.error('JSONとして{0}を解析中にエラーが発生しました'.format(self.file), exc_info=True)
+                parsed = {}
         return parsed
 
     def get(self, item, fallback=None):

@@ -7,6 +7,8 @@ import audioop
 import subprocess
 import re
 
+from discord import FFmpegPCMAudio, PCMVolumeTransformer
+
 from enum import Enum
 from array import array
 from threading import Thread
@@ -18,7 +20,7 @@ from .utils import avg, _func_
 from .lib.event_emitter import EventEmitter
 from .constructs import Serializable, Serializer
 from .exceptions import FFmpegError, FFmpegWarning
-from .entry import StreamPlaylistEntry
+from .entry import URLPlaylistEntry, StreamPlaylistEntry
 
 log = logging.getLogger(__name__)
 
@@ -114,7 +116,6 @@ class MusicPlayer(EventEmitter, Serializable):
         self._stderr_future = None
 
         self.playlist.on('entry-added', self.on_entry_added)
-        self.loop.create_task(self.websocket_check())
 
     @property
     def volume(self):
@@ -124,7 +125,7 @@ class MusicPlayer(EventEmitter, Serializable):
     def volume(self, value):
         self._volume = value
         if self._current_player:
-            self._current_player.buff.volume = value
+            self._current_player.source.volume = value
 
     def on_entry_added(self, playlist, entry):
         if self.is_stopped:
@@ -176,7 +177,7 @@ class MusicPlayer(EventEmitter, Serializable):
         self._events.clear()
         self._kill_current_player()
 
-    def _playback_finished(self):
+    def _playback_finished(self, error=None):
         entry = self._current_entry
 
         if self._current_player:
@@ -200,17 +201,34 @@ class MusicPlayer(EventEmitter, Serializable):
 
                 else:
                     log.debug("ファイルの削除: {}".format(os.path.relpath(entry.filename)))
-                    asyncio.ensure_future(self._delete_file(entry.filename))
+                    filename = entry.filename
+                    for x in range(30):
+                        try:
+                            os.unlink(filename)
+                            log.debug('ファイルが削除されました:{0}'.format(filename))
+                            break
+                        except PermissionError as e:
+                            if e.winerror == 32:  # File is in use
+                                log.error('ファイルを削除できません、現在使用中です:{0}').format(filename)
+                        except FileNotFoundError:
+                            log.debug('見つからなかったため、削除{}が見つかりませんでした。スキップする。'.format(filename), exc_info=True)
+                            break
+                        except Exception:
+                            log.error("{}を削除しようとしてエラーが発生しました".format(filename), exc_info=True)
+                            break
+                    else:
+                        print("[Config:SaveVideos] あきらめて移動しているファイル{}を削除できませんでした".format(
+                            os.path.relpath(filename)))
 
         self.emit('finished-playing', player=self, entry=entry)
 
     def _kill_current_player(self):
         if self._current_player:
-            if self.is_paused:
-                self.resume()
+            if self.voice_client.is_paused():
+                self.voice_client.resume()
 
             try:
-                self._current_player.stop()
+                self.voice_client.stop()
             except OSError:
                 pass
             self._current_player = None
@@ -218,77 +236,8 @@ class MusicPlayer(EventEmitter, Serializable):
 
         return False
 
-    async def _delete_file(self, filename):
-        for x in range(30):
-            try:
-                os.unlink(filename)
-                break
-            except PermissionError as e:
-                if e.winerror == 32:  # File is in use
-                    await asyncio.sleep(0.25)
-            except FileNotFoundError:
-                log.debug('見つからなかったため、削除{}が見つかりませんでした。スキップする。'.format(filename), exc_info=True)
-                break
-            except Exception:
-                log.error("{}を削除しようとしてエラーが発生しました".format(filename), exc_info=True)
-                break
-        else:
-            print("[Config:SaveVideos]ファイル{}を削除できませんでした。あきらめて移動しました".format(
-                os.path.relpath(filename)))
-
     def play(self, _continue=False):
         self.loop.create_task(self._play(_continue=_continue))
-        
-    def run_command(self, cmd):
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        stdout, stderr = p.communicate()
-        return stdout + stderr
-
-    def get(self, program):
-        def is_exe(fpath):
-            found = os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-            if not found and sys.platform == 'win32':
-                fpath = fpath + ".exe"
-                found = os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-            return found
-
-        fpath, __ = os.path.split(program)
-        if fpath:
-            if is_exe(program):
-                return program
-        else:
-            for path in os.environ["PATH"].split(os.pathsep):
-                path = path.strip('"')
-                exe_file = os.path.join(path, program)
-                if is_exe(exe_file):
-                    return exe_file
-
-        return None
-
-    def get_mean_volume(self, input_file):
-        log.debug('{0}の平均容積を計算する。'.format(input_file))
-        cmd = '"' + self.get('ffmpeg') + '" -i "' + input_file + '" -af "volumedetect" -f null /dev/null'
-        # print('===', cmd)
-        try:
-            output = self.run_command(cmd)
-        except Exception as e:
-            raise e
-        output = output.decode("utf-8")
-        # print('----', output)
-        mean_volume_matches = re.findall(r"mean_volume: ([\-\d\.]+) dB", output)
-        if (mean_volume_matches):
-            mean_volume = float(mean_volume_matches[0])
-        else:
-            mean_volume = float(0)
-
-        max_volume_matches = re.findall(r"max_volume: ([\-\d\.]+) dB", output)
-        if (max_volume_matches):
-            max_volume = float(max_volume_matches[0])
-        else:
-            max_volume = float(0)
-
-        log.debug('計算された平均容積は{0} '.format(mean_volume))
-        return mean_volume, max_volume
 
     async def _play(self, _continue=False):
         """
@@ -305,7 +254,7 @@ class MusicPlayer(EventEmitter, Serializable):
                 try:
                     entry = await self.playlist.get_next_entry()
                 except:
-                    log.warning("エントリを取得できませんでした。再試行します。", exc_info=True)
+                    log.warning("エントリを取得できませんでした。再試行しました", exc_info=True)
                     self.loop.call_later(0.1, self.play)
                     return
 
@@ -319,84 +268,49 @@ class MusicPlayer(EventEmitter, Serializable):
 
                 boptions = "-nostdin"
                 # aoptions = "-vn -b:a 192k"
-                if self.bot.config.use_experimental_equalization and not isinstance(entry, StreamPlaylistEntry):
-                    mean, maximum = self.get_mean_volume(entry.filename)
-                    
-                    aoptions = '-af "volume={}dB"'.format((maximum * -1))
-                    
+                if isinstance(entry, URLPlaylistEntry):
+                    aoptions = entry.aoptions
                 else:
                     aoptions = "-vn"
-                
+
                 log.ffmpeg("オプション付きプレーヤーの作成: {} {} {}".format(boptions, aoptions, entry.filename))
 
-                self._current_player = self._monkeypatch_player(self.voice_client.create_ffmpeg_player(
-                    entry.filename,
-                    before_options=boptions,
-                    options=aoptions,
-                    stderr=subprocess.PIPE,
-                    # Threadsafe call soon, b/c after will be called from the voice playback thread.
-                    after=lambda: self.loop.call_soon_threadsafe(self._playback_finished)
-                ))
-                self._current_player.setDaemon(True)
-                self._current_player.buff.volume = self.volume
+                source = PCMVolumeTransformer(
+                    FFmpegPCMAudio(
+                        entry.filename,
+                        before_options=boptions,
+                        options=aoptions,
+                        stderr=subprocess.PIPE
+                    ),
+                    self.volume
+                )
+                log.debug('{1}を使用して{0}を再生しています'.format(source, self.voice_client))
+                self.voice_client.play(source, after=self._playback_finished)
+
+                self._current_player = self.voice_client
 
                 # I need to add ytdl hooks
                 self.state = MusicPlayerState.PLAYING
                 self._current_entry = entry
+
                 self._stderr_future = asyncio.Future()
 
                 stderr_thread = Thread(
                     target=filter_stderr,
-                    args=(self._current_player.process, self._stderr_future),
-                    name="{} stderr reader".format(self._current_player.name)
+                    args=(self._current_player._player.source.original._process, self._stderr_future),
+                    name="stderr reader"
                 )
 
                 stderr_thread.start()
-                self._current_player.start()
 
                 self.emit('play', player=self, entry=entry)
-
-    def _monkeypatch_player(self, player):
-        original_buff = player.buff
-        player.buff = PatchedBuff(original_buff)
-        return player
-
-    async def reload_voice(self, voice_client):
-        async with self.bot.aiolocks[_func_() + ':' + voice_client.channel.server.id]:
-            self.voice_client = voice_client
-            if self._current_player:
-                self._current_player.player = voice_client.play_audio
-                self._current_player._resumed.clear()
-                self._current_player._connected.set()
-
-    async def websocket_check(self):
-        log.voicedebug("{}用のWebSocketチェックループの開始".format(self.voice_client.channel.server))
-
-        while not self.is_dead:
-            try:
-                async with self.bot.aiolocks[self.reload_voice.__name__ + ':' + self.voice_client.channel.server.id]:
-                    await self.voice_client.ws.ensure_open()
-
-            except InvalidState:
-                log.debug("\"{}\"の音声ウェブソケットは{}、再接続しています".format(
-                    self.voice_client.channel.server,
-                    self.voice_client.ws.state_name
-                ))
-                await self.bot.reconnect_voice_client(self.voice_client.channel.server, channel=self.voice_client.channel)
-                await asyncio.sleep(3)
-
-            except Exception:
-                log.error("WebSocketチェックループのエラー", exc_info=True)
-
-            finally:
-                await asyncio.sleep(1)
 
     def __json__(self):
         return self._enclose_json({
             'current_entry': {
                 'entry': self.current_entry,
                 'progress': self.progress,
-                'progress_frames': self._current_player.buff.frame_count if self.progress is not None else None
+                'progress_frames': self._current_player._player.loops if self.progress is not None else None
             },
             'entries': self.playlist
         })
@@ -427,8 +341,8 @@ class MusicPlayer(EventEmitter, Serializable):
     def from_json(cls, raw_json, bot, voice_client, playlist):
         try:
             return json.loads(raw_json, object_hook=Serializer.deserialize)
-        except:
-            log.exception("プレーヤーをデシリアライズできませんでした")
+        except Exception as e:
+            log.exception("プレーヤーをデシリアライズできませんでした", e)
 
 
     @property
@@ -454,7 +368,7 @@ class MusicPlayer(EventEmitter, Serializable):
     @property
     def progress(self):
         if self._current_player:
-            return round(self._current_player.buff.frame_count * 0.02)
+            return round(self._current_player._player.loops * 0.02)
             # TODO: Properly implement this
             #       Correct calculation should be bytes_read/192k
             #       192k AKA sampleRate * (bitDepth / 8) * channelCount
@@ -468,7 +382,7 @@ def filter_stderr(popen:subprocess.Popen, future:asyncio.Future):
     while True:
         data = popen.stderr.readline()
         if data:
-            log.ffmpeg("ffmpegからのデータ: {}".format(data))
+            log.ffmpeg("ffmpegからのデータ:{}".format(data))
             try:
                 if check_stderr(data):
                     sys.stderr.buffer.write(data)
@@ -495,7 +409,7 @@ def check_stderr(data:bytes):
         log.ffmpeg("ffmpegからメッセージを解読するのに不明なエラーがあります", exc_info=True)
         return True # fuck it
 
-    # log.ffmpeg("Decoded data from ffmpeg: {}".format(data))
+    # log.ffmpeg("ffmpegからのデコードされたデータ: {}".format(data))
 
     # TODO: Regex
     warnings = [
@@ -505,7 +419,7 @@ def check_stderr(data:bytes):
         "アプリケーションがストリームでマルチプレクサに無効で単調に増加するdtsを提供",
         "最後のメッセージが繰り返される",
         "閉じるメッセージを送信できませんでした",
-        "decode_band_types：END要素が見つかる前に入力バッファが使い果たされた"
+        "decode_band_types:END要素が見つかる前に入力バッファが使い果たされた"
     ]
     errors = [
         "入力処理時に無効なデータが見つかりました", # need to regex this properly, its both a warning and an error
