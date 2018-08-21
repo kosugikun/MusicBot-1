@@ -210,7 +210,7 @@ class URLPlaylistEntry(BasePlaylistEntry):
                     await self._really_download()
                     
             if self.playlist.bot.config.use_experimental_equalization:
-                try:                 try:
+                try:
                      mean, maximum = await self.get_mean_volume(self.filename)
                      aoptions = '-af "volume={}dB"'.format((maximum * -1))
                  except Exception as e:
