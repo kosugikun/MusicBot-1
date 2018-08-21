@@ -213,7 +213,7 @@ class URLPlaylistEntry(BasePlaylistEntry):
                 try:
                      mean, maximum = await self.get_mean_volume(self.filename)
                      aoptions = '-af "volume={}dB"'.format((maximum * -1))
-                 except Exception as e:
+                except Exception as e:
                      log.error('There as a problem with working out EQ, likely caused by a strange installation of FFmpeg. '
                                'This has not impacted the ability for the bot to work, but will mean your tracks will not be equalised.')
                      aoptions = "-vn"
