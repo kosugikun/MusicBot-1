@@ -6,7 +6,9 @@ type: major
 **discord.pyの書き方**
 
 バージョン1.2.0以降、MusicBot JPにはdiscord.pyの書き換えバージョンが必要です。含まれている更新ファイルを使用してインストールしてください。
-`python3 -m pip install -U -r requirements.txt`
+~~~
+python3 -m pip install -U -r requirements.txt
+~~~
 
 変更要素:
 
