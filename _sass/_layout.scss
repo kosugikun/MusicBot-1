@@ -404,12 +404,17 @@ h4 svg {
 	background: #eee;
 	font-weight: bold;
 
-	&.major {
+	&.重要 {
 		background: $brand-colour;
 		color: #fff;
 	}
 
-	&.warn {
+	&.警告 {
+		background: #c52222;
+		color: #fff;
+	}
+
+	&.警告 {
 		background: #c52222;
 		color: #fff;
 	}
