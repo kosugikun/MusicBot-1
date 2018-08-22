@@ -1,6 +1,6 @@
 ---
 title: 1.2.0
-type: major
+type: 重要
 ---
 
 **discord.pyの書き方**
