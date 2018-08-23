@@ -1064,8 +1064,8 @@ class MusicBot(discord.Client):
         """埋め込みのための基本テンプレートを提供する"""
         e = discord.Embed()
         e.colour = 7506394
-        e.set_footer(text='kosugikun/MusicBot JP ({})'.format(BOTVERSION), icon_url='https://i.imgur.com/gFHBoZA.png')
-        e.set_author(name=self.user.name, url='https://github.com/kosugikun/MusicBot', icon_url=self.user.avatar_url)
+        e.set_footer(text='MusicBot-JP/MusicBot ({})'.format(BOTVERSION), icon_url='https://i.imgur.com/gFHBoZA.png')
+        e.set_author(name=self.user.name, url='https://github.com/MusicBot-JP/MusicBot', icon_url=self.user.avatar_url)
         return e
 
     async def cmd_resetplaylist(self, player, channel):
