@@ -264,7 +264,7 @@ def req_check_deps():
      try:
          import discord
          if discord.version_info.major < 1:
-             log.critical("このバージョンのMusicBotには、より新しいバージョンのdiscord.py(1.0+)が必要です。あなたのバージョンは{0}です。 update.pyを実行してみてください。".format(discord.__version__))
+             log.critical("このバージョンのMusicBot JPには、より新しいバージョンのdiscord.py(1.0+)が必要です。あなたのバージョンは{0}です。 update.pyを実行してみてください。".format(discord.__version__))
              bugger_off()
      except ImportError:
          # if we can't import discord.py, an error will be thrown later down the line anyway
