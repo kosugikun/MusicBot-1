@@ -141,7 +141,7 @@ log.addHandler(tfh)
 
 def finalize_logging():
     if os.path.isfile("logs/musicbot.log"):
-        log.info("古いミュージックボットのログを移動する")
+        log.info("古いミュージックボットのログを移動します。")
         try:
             if os.path.isfile("logs/musicbot.log.last"):
                 os.unlink("logs/musicbot.log.last")
@@ -257,14 +257,14 @@ def req_ensure_py3():
                 log.info("\n Python 3が見つかりました。ボットを再起動する: %s run.py\n", pycom)
                 pyexec(pycom, 'run.py')
 
-        log.critical("Python 3.5以降は見つかりませんでした。 Python 3.5を使ってボットを実行してください")
+        log.critical("Python 3.5以降が見つかりませんでした。 Python 3.5を使ってボットを実行してください")
         bugger_off()
 
 def req_check_deps():
      try:
          import discord
          if discord.version_info.major < 1:
-             log.critical("This version of MusicBot requires a newer version of discord.py (1.0+). Your version is {0}. Try running update.py.".format(discord.__version__))
+             log.critical("このバージョンのMusicBotには、より新しいバージョンのdiscord.py(1.0+)が必要です。あなたのバージョンは{0}です。 update.pyを実行してみてください。".format(discord.__version__))
              bugger_off()
      except ImportError:
          # if we can't import discord.py, an error will be thrown later down the line anyway
@@ -275,7 +275,7 @@ def req_ensure_encoding():
     log.info("コンソールエンコーディングの確認")
 
     if sys.platform.startswith('win') or sys.stdout.encoding.replace('-', '').lower() != 'utf8':
-        log.info("コンソールエンコーディングをUTF-8に設定する")
+        log.info("コンソールエンコーディングをUTF-8に設定します。")
 
         import io
         sys.stdout = io.TextIOWrapper(sys.stdout.detach(), encoding='utf8', line_buffering=True)
@@ -392,7 +392,7 @@ def main():
                     break
                 else:
                     print()
-                    log.info("それがうまくいくことを望みます")
+                    log.info("MusicBot JPをもう一度実行して下さい。次は、正しく起動するはずです。")
                     print()
             else:
                 log.exception("不明なImportError、終了します。")
