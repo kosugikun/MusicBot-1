@@ -6,7 +6,7 @@ order: 4
 
 ![GitHub release](https://img.shields.io/github/release/kosugikun/MusicBot.svg?style=flat-square)
 
-Before updating, make sure to read the [latest changes](/changelog), as some behaviour may have changed significantly.
+アップデートする前に、[最新の変更点](/changelog)を確認してください。動作が大幅に変更されている可能性があります。
 
 * **Linux/MacOS**: `./update.sh` (for Mac users: run this in a Terminal)
 * **Windows**: Open `update.bat`.
