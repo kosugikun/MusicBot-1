@@ -34,9 +34,13 @@ class Spotify:
         """そのURIからアルバムの情報を取得する"""
         return await self.make_spotify_req(self.API_BASE + 'albums/{0}'.format(uri))
 
-    async def get_playlist(self, user, uri, offset=0):
+    async def get_playlist(self, user, uri):
         """そのURIからプレイリストの情報を取得する"""
-        return await self.make_spotify_req(self.API_BASE + 'users/{0}/playlists/{1}{2}'.format(user, uri, "/tracks?offset={}".format(offset) if offset > 0 else ""))
+        return await self.make_spotify_req(self.API_BASE + 'users/{0}/playlists/{1}{2}'.format(user, uri))
+	
+	    async def get_playlist_tracks(self, uri):
+	        """Get a list of a playlist's tracks"""
+	        return await self.make_spotify_req(self.API_BASE + 'playlists/{0}/tracks'.format(uri))
 
     async def make_spotify_req(self, url):
         """正しいAuthヘッダーを使用してSpotify reqを作成するためのプロキシメソッド"""
