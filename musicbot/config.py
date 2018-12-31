@@ -22,16 +22,16 @@ class Config:
         confsections = {"Credentials", "Permissions", "Chat", "MusicBot"}.difference(config.sections())
         if confsections:
             raise HelpfulError(
-                "1つまたは複数の必須設定セクションがありません。",
-                "設定を修正してください。それぞれの[Section]はそれぞれ "
-                "それ以外は何もない。次のセクションがありません:{}".format(
+                "One or more required config sections are missing.",
+                "Fix your config.  Each [Section] should be on its own line with "
+                "nothing else on it.  The following sections are missing: {}".format(
                     ', '.join(['[%s]' % s for s in confsections])
                 ),
-                preface="configの解析中にエラーが発生しました:\n"
+                preface="An error has occured parsing the config:\n"
             )
 
-        self._confpreface = "configの読み込み中にエラーが発生しました:\n"
-        self._confpreface2 = "configの検証中にエラーが発生しました:\n"
+        self._confpreface = "An error has occured reading the config:\n"
+        self._confpreface2 = "An error has occured validating the config:\n"
 
         self._login_token = config.get('Credentials', 'Token', fallback=ConfigDefaults.token)
 
@@ -45,6 +45,7 @@ class Config:
 
         self.command_prefix = config.get('Chat', 'CommandPrefix', fallback=ConfigDefaults.command_prefix)
         self.bound_channels = config.get('Chat', 'BindToChannels', fallback=ConfigDefaults.bound_channels)
+        self.unbound_servers = config.getboolean('Chat', 'AllowUnboundServers', fallback=ConfigDefaults.unbound_servers)
         self.autojoin_channels =  config.get('Chat', 'AutojoinChannels', fallback=ConfigDefaults.autojoin_channels)
 
         self.default_volume = config.getfloat('MusicBot', 'DefaultVolume', fallback=ConfigDefaults.default_volume)
@@ -68,6 +69,7 @@ class Config:
         self.remove_ap = config.getboolean('MusicBot', 'RemoveFromAPOnError', fallback=ConfigDefaults.remove_ap)
         self.show_config_at_start = config.getboolean('MusicBot', 'ShowConfigOnLaunch', fallback=ConfigDefaults.show_config_at_start)
         self.legacy_skip = config.getboolean('MusicBot', 'LegacySkip', fallback=ConfigDefaults.legacy_skip)
+        self.leavenonowners = config.getboolean('MusicBot', 'LeaveServersWithoutOwner', fallback=ConfigDefaults.leavenonowners)
 
         self.debug_level = config.get('MusicBot', 'DebugLevel', fallback=ConfigDefaults.debug_level)
         self.debug_level_str = self.debug_level
@@ -86,7 +88,7 @@ class Config:
         self.find_autoplaylist()
 
     def get_all_keys(self, conf):
-        """すべての設定キーをリストとして返します"""
+        """Returns all config keys as a list"""
         sects = dict(conf.items())
         keys = []
         for k in sects:
@@ -107,7 +109,7 @@ class Config:
 
     def run_checks(self):
         """
-        ボット設定の検証ロジック。
+        Validation logic for bot settings.
         """
         if self.i18n_file != ConfigDefaults.i18n_file and not os.path.isfile(self.i18n_file):
             log.warning('i18n file does not exist. Trying to fallback to {0}.'.format(ConfigDefaults.i18n_file))
@@ -115,19 +117,19 @@ class Config:
 
         if not os.path.isfile(self.i18n_file):
             raise HelpfulError(
-                "i18nファイルが見つかりませんでした。フォールバックできませんでした。",
-                "その結果、ボットは起動できません。いくつかのファイルを移動しましたか？ "
-                "Gitの最近の変更を取り戻すか、ローカルのリポジトリをリセットしてみてください。",
+                "Your i18n file was not found, and we could not fallback.",
+                "As a result, the bot cannot launch. Have you moved some files? "
+                "Try pulling the recent changes from Git, or resetting your local repo.",
                 preface=self._confpreface
             )
 
-        log.info('i18nを使用:{0}'.format(self.i18n_file))
+        log.info('Using i18n: {0}'.format(self.i18n_file))
 
         if not self._login_token:
             raise HelpfulError(
-                "設定にボットトークンが指定されていません。",
-                "v1.1.0以降、Discordボットアカウントを使用する必要があります。"
-                " ",
+                "No bot token was specified in the config.",
+                "As of v1.9.6_1, you are required to use a Discord bot account. "
+                "See https://github.com/Just-Some-Bots/MusicBot/wiki/FAQ for info.",
                 preface=self._confpreface
             )
 
@@ -140,13 +142,14 @@ class Config:
             if self.owner_id.isdigit():
                 if int(self.owner_id) < 10000:
                     raise HelpfulError(
-                        "無効なOwnerIDが設定されました:{}".format(self.owner_id),
+                        "An invalid OwnerID was set: {}".format(self.owner_id),
 
-                        "OwnerIDを修正してください。 IDはちょうど数字でなければなりません。 "
-                        "18文字、または「auto」です。自分のIDがわからない場合は、 "
-                        "オプションの指示を入力するか、ヘルプサーバーに問い合わせてください。",
+                        "Correct your OwnerID. The ID should be just a number, approximately "
+                        "18 characters long, or 'auto'. If you don't know what your ID is, read the "
+                        "instructions in the options or ask in the help server.",
                         preface=self._confpreface
                     )
+                self.owner_id = int(self.owner_id)
 
             elif self.owner_id == 'auto':
                 pass # defer to async check
@@ -156,23 +159,23 @@ class Config:
 
         if not self.owner_id:
             raise HelpfulError(
-                "OwnerIDが設定されていません。",
-                "OwnerIDオプションを{}に設定してください".format(self.config_file),
+                "No OwnerID was set.",
+                "Please set the OwnerID option in {}".format(self.config_file),
                 preface=self._confpreface
             )
 
         if self.bound_channels:
             try:
-                self.bound_channels = set(x for x in self.bound_channels.split() if x)
+                self.bound_channels = set(x for x in self.bound_channels.replace(',', ' ').split() if x)
             except:
-                log.warning("BindToChannelsのデータが無効で、任意のチャンネルにバインドされません。")
+                log.warning("BindToChannels data is invalid, will not bind to any channels")
                 self.bound_channels = set()
 
         if self.autojoin_channels:
             try:
-                self.autojoin_channels = set(x for x in self.autojoin_channels.split() if x)
+                self.autojoin_channels = set(x for x in self.autojoin_channels.replace(',', ' ').split() if x)
             except:
-                log.warning("AutojoinChannelsデータが無効で、チャンネルに自動参加しません")
+                log.warning("AutojoinChannels data is invalid, will not autojoin any channels")
                 self.autojoin_channels = set()
 
         self._spotify = False
@@ -181,9 +184,9 @@ class Config:
 
         self.delete_invoking = self.delete_invoking and self.delete_messages
 
-        self.bound_channels = set(int(item.replace(',', ' ').strip()) for item in self.bound_channels)
+        self.bound_channels = set(int(item) for item in self.bound_channels)
 
-        self.autojoin_channels = set(int(item.replace(',', ' ').strip()) for item in self.autojoin_channels)
+        self.autojoin_channels = set(int(item) for item in self.autojoin_channels)
 
         ap_path, ap_name = os.path.split(self.auto_playlist_file)
         apn_name, apn_ext = os.path.splitext(ap_name)
@@ -192,7 +195,7 @@ class Config:
         if hasattr(logging, self.debug_level.upper()):
             self.debug_level = getattr(logging, self.debug_level.upper())
         else:
-            log.warning("無効なDebugLevelオプション\"{}\"が指定され、INFOに戻っています".format(self.debug_level_str))
+            log.warning("Invalid DebugLevel option \"{}\" given, falling back to INFO".format(self.debug_level_str))
             self.debug_level = logging.INFO
             self.debug_level_str = 'INFO'
 
@@ -204,39 +207,37 @@ class Config:
     def create_empty_file_ifnoexist(self, path):
         if not os.path.isfile(path):
             open(path, 'a').close()
-            log.warning('%sを作成' % path)
+            log.warning('Creating %s' % path)
 
     # TODO: Add save function for future editing of options with commands
     #       Maybe add warnings about fields missing from the config file
 
     async def async_validate(self, bot):
-        log.debug("オプションの検証中...")
+        log.debug("Validating options...")
 
         if self.owner_id == 'auto':
             if not bot.user.bot:
                 raise HelpfulError(
-                    "OwnerIDオプションに無効なパラメータ\"auto\"があります。",
+                    "Invalid parameter \"auto\" for OwnerID option.",
 
-                    "ボットアカウントだけが\"auto\"オプションを使用できます。お願いします "
-                    "configにOwnerIDを設定してください。",
+                    "Only bot accounts can use the \"auto\" option.  Please "
+                    "set the OwnerID in the config.",
 
                     preface=self._confpreface2
                 )
 
             self.owner_id = bot.cached_app_info.owner.id
-            log.debug("API経由でオーナーIDを取得しました")
-        else:
-             self.owner_id = int(self.owner_id)
+            log.debug("Acquired owner id via API")
 
         if self.owner_id == bot.user.id:
             raise HelpfulError(
-                 "オーナーIDが間違っているか、間違った資格情報を使用しています。",
+                "Your OwnerID is incorrect or you've used the wrong credentials.",
 
-                "ボットのユーザーIDとOwnerIDのIDは同じです。 "
-                "これは間違っています。ボットは機能するにはボットアカウントが必要ですが、 "
-                "ボットを実行するために自分のアカウントを使用することはできません。 "
-                "OwnerIDは、ボットではなくオーナーのIDです。 "
-                "どちらが正しいのかを把握し、正しい情報を使用してください。",
+                "The bot's user ID and the id for OwnerID is identical. "
+                "This is wrong. The bot needs a bot account to function, "
+                "meaning you cannot use your own account to run the bot on. "
+                "The OwnerID is the id of the owner, not the bot. "
+                "Figure out which one is which and use the correct information.",
 
                 preface=self._confpreface2
             )
@@ -248,19 +249,19 @@ class Config:
         if not os.path.isfile(self.config_file):
             if os.path.isfile(self.config_file + '.ini'):
                 shutil.move(self.config_file + '.ini', self.config_file)
-                log.info("{0}を{1}に移動すると、ファイル拡張子を有効にする必要があります。".format(
+                log.info("Moving {0} to {1}, you should probably turn file extensions on.".format(
                     self.config_file + '.ini', self.config_file
                 ))
 
             elif os.path.isfile('config/example_options.ini'):
                 shutil.copy('config/example_options.ini', self.config_file)
-                log.warning('オプションファイルが見つからない、example_options.iniをコピーする')
+                log.warning('Options file not found, copying example_options.ini')
 
             else:
                 raise HelpfulError(
-                    "設定ファイルがありません。 options.iniもexample_options.iniも見つかりませんでした。",
-                    "アーカイブからファイルを取り戻すか、自分でリメイクしてコンテンツをコピーして貼り付けます "
-                    "レポから。重要なファイルの削除をやめてください！"
+                    "Your config files are missing. Neither options.ini nor example_options.ini were found.",
+                    "Grab the files back from the archive or remake them yourself and copy paste the content "
+                    "from the repo. Stop removing important files!"
                 )
 
         if not config.read(self.config_file, encoding='utf-8'):
@@ -271,29 +272,29 @@ class Config:
 
                 if not int(c.get('Permissions', 'OwnerID', fallback=0)): # jake pls no flame
                     print(flush=True)
-                    log.critical("config/options.iniを設定して、ボットを再実行してください。")
+                    log.critical("Please configure config/options.ini and re-run the bot.")
                     sys.exit(1)
 
             except ValueError: # Config id value was changed but its not valid
                 raise HelpfulError(
-                    'オーナーIDの値「{}」が無効です。設定を読み込めません。'.format(
+                    'Invalid value "{}" for OwnerID, config cannot be loaded. '.format(
                         c.get('Permissions', 'OwnerID', fallback=None)
                     ),
-                    "OwnerIDオプションにはユーザーIDまたは 'auto'が必要です。"
+                    "The OwnerID option requires a user ID or 'auto'."
                 )
 
             except Exception as e:
                 print(flush=True)
-                log.critical("config/example_options.iniを{}にコピーできません".format(self.config_file), exc_info=e)
+                log.critical("Unable to copy config/example_options.ini to {}".format(self.config_file), exc_info=e)
                 sys.exit(2)
 
     def find_autoplaylist(self):
         if not os.path.exists(self.auto_playlist_file):
             if os.path.exists('config/_autoplaylist.txt'):
                 shutil.copy('config/_autoplaylist.txt', self.auto_playlist_file)
-                log.debug("_autoplaylist.txtをautoplaylist.txtにコピーします。")
+                log.debug("Copying _autoplaylist.txt to autoplaylist.txt")
             else:
-                log.warning("自動再生リストファイルが見つかりませんでした。")
+                log.warning("No autoplaylist file found.")
 
 
     def write_default_config(self, location):
@@ -311,6 +312,7 @@ class ConfigDefaults:
 
     command_prefix = '!'
     bound_channels = set()
+    unbound_servers = False
     autojoin_channels = set()
 
     default_volume = 0.15
@@ -335,11 +337,12 @@ class ConfigDefaults:
     remove_ap = True
     show_config_at_start = False
     legacy_skip = False
+    leavenonowners = False
 
     options_file = 'config/options.ini'
     blacklist_file = 'config/blacklist.txt'
     auto_playlist_file = 'config/autoplaylist.txt'  # this will change when I add playlists
-    i18n_file = 'config/i18n/ja.json'
+    i18n_file = 'config/i18n/en.json'
 
 setattr(ConfigDefaults, codecs.decode(b'ZW1haWw=', '\x62\x61\x73\x65\x36\x34').decode('ascii'), None)
 setattr(ConfigDefaults, codecs.decode(b'cGFzc3dvcmQ=', '\x62\x61\x73\x65\x36\x34').decode('ascii'), None)
