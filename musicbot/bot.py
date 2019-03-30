@@ -109,7 +109,7 @@ class MusicBot(discord.Client):
 
         super().__init__()
         self.aiosession = aiohttp.ClientSession(loop=self.loop)
-        self.http.user_agent += ' MusicBotJP/%s' % BOTVERSION
+        self.http.user_agent += ' MusicBot/%s' % BOTVERSION
 
         self.spotify = None
         if self.config._spotify:
@@ -1084,7 +1084,7 @@ class MusicBot(discord.Client):
         """Provides a basic template for embeds"""
         e = discord.Embed()
         e.colour = 7506394
-        e.set_footer(text='Cosgy-Dev/MusicBot ({})'.format(BOTVERSION), icon_url='https://i.imgur.com/gFHBoZA.png')
+        e.set_footer(text='Cosgy-Dev/MusicBot ({})'.format(BOTVERSION), icon_url='https://www.cosgy.jp/wp-content/uploads/2019/03/06542A4E-BEA6-44D7-BDFD-E65BE9225210.jpeg')
         e.set_author(name=self.user.name, url='https://github.com/Cosgy-Dev/MusicBot', icon_url=self.user.avatar_url)
         return e
 
