@@ -143,7 +143,7 @@ class Config:
             if self.owner_id.isdigit():
                 if int(self.owner_id) < 10000:
                     raise HelpfulError(
-                        "無効なOwnerIDが設定されました:{}".format(self.owner_id),
+                        "An invalid OwnerID was set: {}".format(self.owner_id),
 
                         "OwnerIDを修正してください。 IDはおおよそ単なる数字であるべきです "
                         "長さ18文字、または 'auto'。自分のIDがわからない場合は、 "
@@ -286,7 +286,7 @@ class Config:
 
             except Exception as e:
                 print(flush=True)
-                log.critical("config/example_options.iniを{}にコピーできません".format(self.config_file), exc_info=e)
+                log.critical("Unable to copy config/example_options.ini to {}".format(self.config_file), exc_info=e)
                 sys.exit(2)
 
     def find_autoplaylist(self):
@@ -344,7 +344,7 @@ class ConfigDefaults:
     options_file = 'config/options.ini'
     blacklist_file = 'config/blacklist.txt'
     auto_playlist_file = 'config/autoplaylist.txt'  # this will change when I add playlists
-    i18n_file = 'config/i18n/ja.json'
+    i18n_file = 'config/i18n/en.json'
 
 setattr(ConfigDefaults, codecs.decode(b'ZW1haWw=', '\x62\x61\x73\x65\x36\x34').decode('ascii'), None)
 setattr(ConfigDefaults, codecs.decode(b'cGFzc3dvcmQ=', '\x62\x61\x73\x65\x36\x34').decode('ascii'), None)
