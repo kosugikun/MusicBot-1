@@ -2,7 +2,7 @@
     "cmd-resetplaylist-response": "서버의 자동재생리스트가 리셋되었습니다.",
     "cmd-help-invalid": "명령어를 찾을 수 없습니다.",
     "cmd-help-no-perms": "당신은 안타깝지만 명령어를 사용할 권한이 없어요.. 그나저나 {}help all 명령어를 통해서 명령어 리스트를 볼 수 있답니다",
-    "cmd-help-response": "특정 명령어에 대한 정보는, {}help [명령어] 형식으로 사용하세요\n더 많은 도움이 필요하다면, 깃허브를 참고하세요 (: https://musicbot.mcpenano.net/",
+    "cmd-help-response": "특정 명령어에 대한 정보는, {}help [명령어] 형식으로 사용하세요\n더 많은 도움이 필요하다면, 깃허브를 참고하세요 (: https://just-some-bots.github.io/MusicBot/",
     "cmd-help-all": "\n보여지는 명령어들만 사용할 수 있습니다. 명령어 목록이 필요하다면, `{}help all` 를 쳐보세요",
     "cmd-blacklist-invalid": "잘못된 옵션 '{0}' , +, -, add, 또는 remove를 사용해보세요",
     "cmd-blacklist-added": "사용자 {0}가 블랙리스트에 추가되었습니다.",

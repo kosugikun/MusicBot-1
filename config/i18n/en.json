@@ -2,7 +2,7 @@
     "cmd-resetplaylist-response": "The server's autoplaylist has been reset.",
     "cmd-help-invalid": "No such command",
     "cmd-help-no-perms": "You don't have permission to use any commands. Run `{}help all` list every command anyway",
-    "cmd-help-response": "For information about a particular command, run `{}help [command]`\nFor further help, see https://musicbot.mcpenano.net/",
+    "cmd-help-response": "For information about a particular command, run `{}help [command]`\nFor further help, see https://just-some-bots.github.io/MusicBot/",
     "cmd-help-all": "\nOnly showing commands you can use, for a list of all commands, run `{}help all`",
     "cmd-blacklist-invalid": "Invalid option '{0}' specified, use +, -, add, or remove",
     "cmd-blacklist-added": "{0} users have been added to the blacklist",
@@ -16,7 +16,7 @@
     "cmd-joinserver-response": "Click here to add me to a server: \n{}",
     "cmd-play-spotify-album-process": "Processing album `{0}` (`{1}`)",
     "cmd-play-spotify-album-queued": "Enqueued `{0}` with **{1}** songs.",
-    "cmd-play-spotify-playlist-process": "Processing playlist `{0}`(`{1}`)",
+    "cmd-play-spotify-playlist-process": "Processing playlist `{0}` (`{1}`)",
     "cmd-play-spotify-playlist-queued": "Enqueued `{0}` with **{1}** songs.",
     "cmd-play-spotify-unsupported": "That is not a supported Spotify URI.",
     "cmd-play-spotify-invalid": "You either provided an invalid URI, or there was a problem.",
@@ -102,5 +102,6 @@
     "playlists-noperms": "You are not allowed to request playlists",
     "playlists-big": "Playlist has too many entries ({0} > {1})",
     "playlists-limit": "Playlist entries + your already queued songs reached limit ({0} + {1} > {2})",
-    "karaoke-enabled": "Karaoke mode is enabled, please try again when its disabled!"
+    "karaoke-enabled": "Karaoke mode is enabled, please try again when its disabled!",
+    "left-no-owner-guilds": "Left `{}` due to bot owner not being found in it."
 }

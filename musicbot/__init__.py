@@ -51,22 +51,22 @@ class Yikes:
         import_tb = self._format_import_chain(import_chain)
 
         raise HelpfulError(
-            "You are attempting to import requests, or import a module that uses requests.  "
-            "Requests (or any module that uses requests) should not be used in this code.  "
-            "See %s for why requests is not suitable for this code."
+            "要求をインポートしようとしているか、要求を使用するモジュールをインポートしようとしています。  "
+            "要求（または要求を使用するモジュール）は、このコードでは使用しないでください。  "
+            "要求がこのコードに適していない理由については%sを参照してください。"
             % "[https://discordpy.readthedocs.io/en/latest/faq.html#what-does-blocking-mean]",
 
-            "Don't use requests, use aiohttp instead.  The api is very similar to requests "
-            "when using session objects. [http://aiohttp.readthedocs.io/en/stable/]  If "
-            "a module you're trying to use depends on requests, see if you can find a similar "
-            "module compatable with asyncio.  If you can't find one, learn how to avoid blocking "
-            "in coroutines.  If you're new to programming, consider learning more about how "
-            "asynchronous code and coroutines work.  Blocking calls (notably HTTP requests) can take "
-            "a long time, during which the bot is unable to do anything but wait for it.  "
-            "If you're sure you know what you're doing, simply add `allow_requests = True` above your "
-            "import statement, that being `import requests` or whatever requests dependent module.",
+            "リクエストを使わずに、代わりにaiohttpを使ってください。 APIはリクエストに非常に似ています "
+            "セッションオブジェクトを使用する場合[http://aiohttp.readthedocs.io/en/stable/] "
+            "あなたが使おうとしているモジュールは要求に依存します、あなたが似たものを見つけることができるかどうか確かめてください "
+            "asyncioと互換性のあるモジュール。見つからない場合は、ブロックを回避する方法を学びます "
+            "コルーチンで。もしあなたがプログラミングに慣れていないのであれば、その方法についてもっと学ぶことを検討してください。 "
+            "非同期コードとコルーチンが機能します。ブロック呼び出し（特にHTTP要求）にかかる可能性がある "
+            "長い間、ボットはそれを待つしかないのです。 "
+            "自分のしていることがわかっていると確信できる場合は、単にあなたの上に `allow_requests = True`を追加してください "
+            "import文、それは「インポート要求」、あるいはどんな依存モジュールにも関係します。",
 
-            footnote="Import traceback (most recent call last):\n" + import_tb
+            footnote="トレースバックのインポート(最新のコールが最後):\n" + import_tb
         )
 
 sys.meta_path.insert(0, Yikes())

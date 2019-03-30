@@ -10,4 +10,3 @@ MusicBot JPは、[discord.py](https://github.com/Rapptz/discord)を使って[Pyt
 メインの設定ファイルは `config / options.ini`ですが、含まれていません。 `example_options.ini`のコピーを作り、` options.ini`に名前を変更するだけです。それを設定する方法の詳細については、 `example_options.ini`を参照してください。
 
 * [Project license](LICENSE)
-

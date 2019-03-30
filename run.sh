@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Ensure we're in the MusicBot directory
+cd "$(dirname "$BASH_SOURCE")"
+
 # Set variables for python versions. Could probably be done cleaner, but this works.
 declare -A python=( ["0"]=`python -c 'import sys; version=sys.version_info[:3]; print("{0}".format(version[0]))' || { echo "no py"; }` ["1"]=`python -c 'import sys; version=sys.version_info[:3]; print("{0}".format(version[1]))' || { echo "no py"; }` ["2"]=`python -c 'import sys; version=sys.version_info[:3]; print("{0}".format(version[2]))' || { echo "no py"; }` )
 declare -A python3=( ["0"]=`python3 -c 'import sys; version=sys.version_info[:3]; print("{0}".format(version[1]))' || { echo "no py3"; }` ["1"]=`python3 -c 'import sys; version=sys.version_info[:3]; print("{0}".format(version[2]))' || { echo "no py3"; }` )
@@ -47,5 +50,5 @@ if [ "$PYTHON37_VERSION" -eq "7" ]; then # Python3.7 = 3.7
     exit
 fi
 
-echo "You are running an unsupported Python version."
-echo "Please use a version of Python above 3.5.2."
+echo "サポートされていないPythonバージョンを実行しています。"
+echo "3.5.2以上のバージョンのPythonを使用してください。"

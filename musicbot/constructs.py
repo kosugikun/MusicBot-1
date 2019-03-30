@@ -110,7 +110,7 @@ class Serializable:
     # Perhaps convert this into some sort of decorator
     @staticmethod
     def _bad(arg):
-        raise TypeError('引数 "%s"はNoneであってはなりません。' % arg)
+        raise TypeError('引数 "%s"はNoneであってはいけません' % arg)
 
     def serialize(self, *, cls=Serializer, **kwargs):
         return json.dumps(self, cls=cls, **kwargs)

@@ -14,4 +14,4 @@ def load_opus_lib(opus_libs=OPUS_LIBS):
         except OSError:
             pass
 
-    raise RuntimeError('opus libを読み込めませんでした。試した%s' % (', '.join(opus_libs)))
+    raise RuntimeError('オーパスライブラリをロードできませんでした。試行した%s' % (', '.join(opus_libs)))

@@ -27,7 +27,7 @@ log = logging.getLogger(__name__)
 
 class PatchedBuff:
     """
-        PatchedBuffモンキーは読み込み可能なオブジェクトにパッチを当てるので、ソングの再生中の音量を変更することができます。
+        PatchedBuff monkey patches a readable object, allowing you to vary what the volume is as the song is playing.
     """
 
     def __init__(self, buff, *, draw=False):
@@ -154,7 +154,7 @@ class MusicPlayer(EventEmitter, Serializable):
             self._kill_current_player()
             return
 
-        raise ValueError('状態%sから再生を再開できません' % self.state)
+        raise ValueError('%s状態から再生を再開できません' % self.state)
 
     def pause(self):
         if self.is_playing:
@@ -169,7 +169,7 @@ class MusicPlayer(EventEmitter, Serializable):
         elif self.is_paused:
             return
 
-        raise ValueError('状態%sの音楽プレーヤーを一時停止できません' % self.state)
+        raise ValueError('%s状態の音楽プレーヤーを一時停止できません' % self.state)
 
     def kill(self):
         self.state = MusicPlayerState.DEAD
@@ -191,33 +191,30 @@ class MusicPlayer(EventEmitter, Serializable):
             # unless ffmpeg is doing something highly questionable
             self.emit('error', player=self, entry=entry, ex=self._stderr_future.exception())
 
-        if not self.is_stopped and not self.is_dead:
-            self.play(_continue=True)
-
         if not self.bot.config.save_videos and entry:
             if not isinstance(entry, StreamPlaylistEntry):
                 if any([entry.filename == e.filename for e in self.playlist.entries]):
-                    log.debug("\"{}\"の削除をスキップし、キュー内の曲を見つけました".format(entry.filename))
+                    log.debug("\"{}\"の削除をスキップして、キューにある曲を見つけました".format(entry.filename))
 
                 else:
-                    log.debug("ファイルの削除: {}".format(os.path.relpath(entry.filename)))
+                    log.debug("ファイルを削除します:{}".format(os.path.relpath(entry.filename)))
                     filename = entry.filename
                     for x in range(30):
                         try:
                             os.unlink(filename)
-                            log.debug('ファイルが削除されました:{0}'.format(filename))
+                            log.debug('ファイルが削除されました: {0}'.format(filename))
                             break
                         except PermissionError as e:
                             if e.winerror == 32:  # File is in use
-                                log.error('ファイルを削除できません、現在使用中です:{0}').format(filename)
+                                log.error('Can\'t delete file, it is currently in use: {0}').format(filename)
                         except FileNotFoundError:
-                            log.debug('見つからなかったため、削除{}が見つかりませんでした。スキップする。'.format(filename), exc_info=True)
+                            log.debug('削除する{}が見つかりませんでした。スキップしています。'.format(filename), exc_info=True)
                             break
                         except Exception:
                             log.error("{}を削除しようとしてエラーが発生しました".format(filename), exc_info=True)
                             break
                     else:
-                        print("[Config:SaveVideos] あきらめて移動しているファイル{}を削除できませんでした".format(
+                        print("[設定：SaveVideos]ファイル{}を削除できませんでした。".format(
                             os.path.relpath(filename)))
 
         self.emit('finished-playing', player=self, entry=entry)
@@ -241,9 +238,9 @@ class MusicPlayer(EventEmitter, Serializable):
 
     async def _play(self, _continue=False):
         """
-            プレイリストから次のエントリを再生するか、一時停止している場合は現在のエントリの再生を再開します。
+            Plays the next entry from the playlist, or resumes playback of the current entry if paused.
         """
-        if self.is_paused:
+        if self.is_paused and self._current_player:
             return self.resume()
 
         if self.is_dead:
@@ -254,7 +251,7 @@ class MusicPlayer(EventEmitter, Serializable):
                 try:
                     entry = await self.playlist.get_next_entry()
                 except:
-                    log.warning("エントリを取得できませんでした。再試行しました", exc_info=True)
+                    log.warning("Failed to get entry, retrying", exc_info=True)
                     self.loop.call_later(0.1, self.play)
                     return
 
@@ -273,7 +270,7 @@ class MusicPlayer(EventEmitter, Serializable):
                 else:
                     aoptions = "-vn"
 
-                log.ffmpeg("オプション付きプレーヤーの作成: {} {} {}".format(boptions, aoptions, entry.filename))
+                log.ffmpeg("オプション付きのプレーヤーを作成しています:{} {} {}".format(boptions, aoptions, entry.filename))
 
                 source = PCMVolumeTransformer(
                     FFmpegPCMAudio(
@@ -284,7 +281,7 @@ class MusicPlayer(EventEmitter, Serializable):
                     ),
                     self.volume
                 )
-                log.debug('{1}を使用して{0}を再生しています'.format(source, self.voice_client))
+                log.debug('{1}を使用して{0}をプレイ中'.format(source, self.voice_client))
                 self.voice_client.play(source, after=self._playback_finished)
 
                 self._current_player = self.voice_client
@@ -342,7 +339,7 @@ class MusicPlayer(EventEmitter, Serializable):
         try:
             return json.loads(raw_json, object_hook=Serializer.deserialize)
         except Exception as e:
-            log.exception("プレーヤーをデシリアライズできませんでした", e)
+            log.exception("プレーヤーのシリアル化解除に失敗しました", e)
 
 
     @property
@@ -382,14 +379,14 @@ def filter_stderr(popen:subprocess.Popen, future:asyncio.Future):
     while True:
         data = popen.stderr.readline()
         if data:
-            log.ffmpeg("ffmpegからのデータ:{}".format(data))
+            log.ffmpeg("ffmpegからのデータ: {}".format(data))
             try:
                 if check_stderr(data):
                     sys.stderr.buffer.write(data)
                     sys.stderr.buffer.flush()
 
             except FFmpegError as e:
-                log.ffmpeg("ffmpegからのエラー:%s", str(e).strip())
+                log.ffmpeg("ffmpegからのエラー: %s", str(e).strip())
                 last_ex = e
 
             except FFmpegWarning:
@@ -406,23 +403,23 @@ def check_stderr(data:bytes):
     try:
         data = data.decode('utf8')
     except:
-        log.ffmpeg("ffmpegからメッセージを解読するのに不明なエラーがあります", exc_info=True)
+        log.ffmpeg("ffmpegからのメッセージをデコード中の不明なエラー", exc_info=True)
         return True # fuck it
 
-    # log.ffmpeg("ffmpegからのデコードされたデータ: {}".format(data))
+    # log.ffmpeg("ffmpegからデコードされたデータ:{}".format(data))
 
     # TODO: Regex
     warnings = [
         "ヘッダーがありません",
-        "ビットレートからの継続時間の見積もり、これは不正確かもしれません",
+        "ビットレートから期間を推定する、これは不正確かもしれません",
         "AVStream.codecを使用してコーデックパラメータをマルチプレクサに渡すことは推奨されていません。代わりにAVStream.codecparを使用してください。",
-        "アプリケーションがストリームでマルチプレクサに無効で単調に増加するdtsを提供",
-        "最後のメッセージが繰り返される",
-        "閉じるメッセージを送信できませんでした",
-        "decode_band_types:END要素が見つかる前に入力バッファが使い果たされた"
+        "アプリケーションがストリーム内で無効、単調増加ではないdtsをマルチプレクサに提供しました",
+        "最後のメッセージの繰り返し",
+        "クローズメッセージを送信できませんでした",
+        "decode_band_types：END要素が見つかる前に入力バッファを使い果たしました"
     ]
     errors = [
-        "入力処理時に無効なデータが見つかりました", # need to regex this properly, its both a warning and an error
+        "入力処理中に無効なデータが見つかりました", # need to regex this properly, its both a warning and an error
     ]
 
     if any(msg in data for msg in warnings):

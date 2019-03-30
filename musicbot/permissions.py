@@ -7,6 +7,8 @@ import discord
 
 log = logging.getLogger(__name__)
 
+# PermissionDefaults class define the strictest value of each permissions
+# Permissive class define the permissive value of each permissions
 
 class PermissionsDefaults:
     perms_file = 'config/permissions.ini'
@@ -28,36 +30,36 @@ class PermissionsDefaults:
     SkipWhenAbsent = True
     BypassKaraokeMode = False
 
-    Extractors = "youtube youtube:playlist"
-	
-	class Permissive:
-	    CommandWhiteList = set()
-	    CommandBlackList = set()
-	    IgnoreNonVoice = set()
-	    GrantToRoles = set()
-	    UserList = set()
-	
-	    MaxSongs = 0
-	    MaxSongLength = 0
-	    MaxPlaylistLength = 0
-	    MaxSearchItems = 10
-	
-	    AllowPlaylists = True
-	    InstaSkip = True
-	    Remove = True
-	    SkipWhenAbsent = False
-	    BypassKaraokeMode = True
+    Extractors = "generic youtube youtube:playlist"
 
-        Extractors = ""
+class Permissive:
+    CommandWhiteList = set()
+    CommandBlackList = set()
+    IgnoreNonVoice = set()
+    GrantToRoles = set()
+    UserList = set()
+
+    MaxSongs = 0
+    MaxSongLength = 0
+    MaxPlaylistLength = 0
+    MaxSearchItems = 10
+
+    AllowPlaylists = True
+    InstaSkip = True
+    Remove = True
+    SkipWhenAbsent = False
+    BypassKaraokeMode = True
+
+    Extractors = ""
 
 class Permissions:
-    
-    def __init__(self, config_file, grant_all=None):
+
+    def __init__(self, config_file, grant_all=None):        
         self.config_file = config_file
         self.config = configparser.ConfigParser(interpolation=None)
 
         if not self.config.read(config_file, encoding='utf-8'):
-            log.info("許可ファイルが見つからない、example_permissions.iniをコピーする")
+            log.info("Permissions file not found, copying example_permissions.ini")
 
             try:
                 shutil.copy('config/example_permissions.ini', config_file)
@@ -65,33 +67,33 @@ class Permissions:
 
             except Exception as e:
                 traceback.print_exc()
-                raise RuntimeError("config/example_permissions.iniを{}にコピーできません:{}".format(config_file, e))
+                raise RuntimeError("Unable to copy config/example_permissions.ini to {}: {}".format(config_file, e))
 
         self.default_group = PermissionGroup('Default', self.config['Default'])
         self.groups = set()
 
         for section in self.config.sections():
             if section != 'Owner (auto)':
-	                self.groups.add(PermissionGroup(section, self.config[section]))
-	
-	        if self.config.has_section('Owner (auto)'):
-	            owner_group = PermissionGroup('Owner (auto)', self.config['Owner (auto)'], fallback=Permissive)
-	
-	        else:
-	            log.info("[Owner (auto)] section not found, falling back to permissive default")
-	            # Create a fake section to fallback onto the default non-permissive values to grant to the owner emulating the old behavior
-	            # noinspection PyTypeChecker
-	            owner_group = PermissionGroup("Owner (auto)", configparser.SectionProxy(self.config, Permissive))
-	
+                self.groups.add(PermissionGroup(section, self.config[section]))
+                
+        if self.config.has_section('Owner (auto)'):
+            owner_group = PermissionGroup('Owner (auto)', self.config['Owner (auto)'], fallback=Permissive)
+            
+        else:
+            log.info("[Owner(auto)]セクションが見つかりません。許可されたデフォルトにフォールバックします")
+            # Create a fake section to fallback onto the default permissive values to grant to the owner
+            # noinspection PyTypeChecker
+            owner_group = PermissionGroup("Owner (auto)", configparser.SectionProxy(self.config, "Owner (auto)"), fallback=Permissive)
+            
         if hasattr(grant_all, '__iter__'):
             owner_group.user_list = set(grant_all)
 
         self.groups.add(owner_group)
 
     async def async_validate(self, bot):
-        log.debug("権限の検証中...")
+        log.debug("権限を検証しています...")
 
-        og = discord.utils.get(self.groups, name="オーナー (auto)")
+        og = discord.utils.get(self.groups, name="Owner (auto)")
         if 'auto' in og.user_list:
             log.debug("自動所有者グループの修正")
             og.user_list = {bot.config.owner_id}
@@ -102,8 +104,8 @@ class Permissions:
 
     def for_user(self, user):
         """
-        ユーザーが属している最初のPermissionGroupを返します。
-        :param user:不一致ユーザーまたはメンバーオブジェクト
+        Returns the first PermissionGroup a user belongs to
+        :param user: A discord User or Member object
         """
 
         for group in self.groups:
@@ -132,24 +134,24 @@ class PermissionGroup:
     def __init__(self, name, section_data, fallback=PermissionsDefaults):
         self.name = name
         
-	    self.command_whitelist = section_data.get('CommandWhiteList', fallback=fallback.CommandWhiteList)
-	    self.command_blacklist = section_data.get('CommandBlackList', fallback=fallback.CommandBlackList)
-	    self.ignore_non_voice = section_data.get('IgnoreNonVoice', fallback=fallback.IgnoreNonVoice)
-	    self.granted_to_roles = section_data.get('GrantToRoles', fallback=fallback.GrantToRoles)
-	    self.user_list = section_data.get('UserList', fallback=fallback.UserList)
-	
-	    self.max_songs = section_data.get('MaxSongs', fallback=fallback.MaxSongs)
-	    self.max_song_length = section_data.get('MaxSongLength', fallback=fallback.MaxSongLength)
-	    self.max_playlist_length = section_data.get('MaxPlaylistLength', fallback=fallback.MaxPlaylistLength)
-	    self.max_search_items = section_data.get('MaxSearchItems', fallback=fallback.MaxSearchItems)
-	
-	    self.allow_playlists = section_data.get('AllowPlaylists', fallback=fallback.AllowPlaylists)
-	    self.instaskip = section_data.get('InstaSkip', fallback=fallback.InstaSkip)
-	    self.remove = section_data.get('Remove', fallback=fallback.Remove)
-	    self.skip_when_absent = section_data.get('SkipWhenAbsent', fallback=fallback.SkipWhenAbsent)
-	    self.bypass_karaoke_mode = section_data.get('BypassKaraokeMode', fallback=fallback.BypassKaraokeMode)
-	
-	    self.extractors = section_data.get('Extractors', fallback=fallback.Extractors)        self.extractors = section_data.get('Extractors', fallback=PermissionsDefaults.Extractors)
+        self.command_whitelist = section_data.get('CommandWhiteList', fallback=fallback.CommandWhiteList)
+        self.command_blacklist = section_data.get('CommandBlackList', fallback=fallback.CommandBlackList)
+        self.ignore_non_voice = section_data.get('IgnoreNonVoice', fallback=fallback.IgnoreNonVoice)
+        self.granted_to_roles = section_data.get('GrantToRoles', fallback=fallback.GrantToRoles)
+        self.user_list = section_data.get('UserList', fallback=fallback.UserList)
+
+        self.max_songs = section_data.get('MaxSongs', fallback=fallback.MaxSongs)
+        self.max_song_length = section_data.get('MaxSongLength', fallback=fallback.MaxSongLength)
+        self.max_playlist_length = section_data.get('MaxPlaylistLength', fallback=fallback.MaxPlaylistLength)
+        self.max_search_items = section_data.get('MaxSearchItems', fallback=fallback.MaxSearchItems)
+
+        self.allow_playlists = section_data.getboolean('AllowPlaylists', fallback=fallback.AllowPlaylists)
+        self.instaskip = section_data.getboolean('InstaSkip', fallback=fallback.InstaSkip)
+        self.remove = section_data.getboolean('Remove', fallback=fallback.Remove)
+        self.skip_when_absent = section_data.getboolean('SkipWhenAbsent', fallback=fallback.SkipWhenAbsent)
+        self.bypass_karaoke_mode = section_data.getboolean('BypassKaraokeMode', fallback=fallback.BypassKaraokeMode)
+
+        self.extractors = section_data.get('Extractors', fallback=fallback.Extractors)
 
         self.validate()
 
@@ -186,35 +188,15 @@ class PermissionGroup:
             self.max_playlist_length = max(0, int(self.max_playlist_length))
         except:
             self.max_playlist_length = PermissionsDefaults.MaxPlaylistLength
-                                  
+
         try:
-             self.max_search_items = max(0, int(self.max_search_items))
+            self.max_search_items = max(0, int(self.max_search_items))
         except:
-             self.max_search_items = PermissionsDefaults.MaxSearchItems
+            self.max_search_items = PermissionsDefaults.MaxSearchItems
 
         if int(self.max_search_items) > 100:
-             log.warning('最大検索項目は100より大きくすることはできません。100以下に設定してください。')
-             self.max_search_items = 100
-
-        self.allow_playlists = configparser.RawConfigParser.BOOLEAN_STATES.get(
-            self.allow_playlists, PermissionsDefaults.AllowPlaylists
-        )
-
-        self.instaskip = configparser.RawConfigParser.BOOLEAN_STATES.get(
-            self.instaskip, PermissionsDefaults.InstaSkip
-        )
-
-        self.remove = configparser.RawConfigParser.BOOLEAN_STATES.get(
-            self.remove, PermissionsDefaults.Remove
-        )
-
-        self.skip_when_absent = configparser.RawConfigParser.BOOLEAN_STATES.get(
-            self.skip_when_absent, PermissionsDefaults.SkipWhenAbsent
-        )
-
-        self.bypass_karaoke_mode = configparser.RawConfigParser.BOOLEAN_STATES.get(
-            self.bypass_karaoke_mode, PermissionsDefaults.BypassKaraokeMode
-        )
+            log.warning('Max search items can\'t be larger than 100. Setting to 100.')
+            self.max_search_items = 100
 
     @staticmethod
     def _process_list(seq, *, split=' ', lower=True, strip=', ', coerce=str, rcoerce=list):

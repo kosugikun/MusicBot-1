@@ -22,7 +22,7 @@ def load_file(filename, skip_commented_lines=True, comment_char='#'):
             return results
 
     except IOError as e:
-        print("Error loading", filename, e)
+        print("読み込みエラー", filename, e)
         return []
 
 
@@ -41,7 +41,7 @@ def paginate(content, *, length=DISCORD_MSG_CHAR_LIMIT, reserve=0):
     elif type(content) == list:
         contentlist = content
     else:
-        raise ValueError("Content must be str or list, not %s" % type(content))
+        raise ValueError("内容は%sではなくstrまたはlistでなければなりません" % type(content))
 
     chunks = []
     currentchunk = ''
@@ -153,15 +153,15 @@ def _func_():
     return inspect.currentframe().f_back.f_code.co_name
 
 def _get_variable(name):
-     stack = inspect.stack()
-     try:
-         for frames in stack:
-             try:
-                 frame = frames[0]
-                 current_locals = frame.f_locals
-                 if name in current_locals:
-                     return current_locals[name]
-             finally:
-                 del frame
-     finally:
-         del stack
+    stack = inspect.stack()
+    try:
+        for frames in stack:
+            try:
+                frame = frames[0]
+                current_locals = frame.f_locals
+                if name in current_locals:
+                    return current_locals[name]
+            finally:
+                del frame
+    finally:
+        del stack

@@ -48,7 +48,7 @@ class SpotifyError(MusicbotException):
 class PermissionsError(CommandError):
     @property
     def message(self):
-        return "あなたはそのコマンドを使用する権限を持っていません。\n理由: " + self._message
+        return "そのコマンドを使用する権限がありません。\n理由: " + self._message
 
 # Error with pretty formatting for hand-holding users through various errors
 class HelpfulError(MusicbotException):
@@ -73,8 +73,8 @@ class HelpfulError(MusicbotException):
     def message_no_format(self):
         return self._message_fmt.format(
             preface  = self.preface,
-            problem  = self._pretty_wrap(self.issue,    "  Problem:", width=None),
-            solution = self._pretty_wrap(self.solution, "  Solution:", width=None),
+            problem  = self._pretty_wrap(self.issue,    "問題:", width=None),
+            solution = self._pretty_wrap(self.solution, "溶液:", width=None),
             footnote = self.footnote
         )
 
