@@ -143,7 +143,7 @@ class Config:
             if self.owner_id.isdigit():
                 if int(self.owner_id) < 10000:
                     raise HelpfulError(
-                        "無効なOwnerIDが設定されました:{}".format(self.owner_id),
+                        "An invalid OwnerID was set: {}".format(self.owner_id),
 
                         "OwnerIDを修正してください。 IDはおおよそ単なる数字であるべきです "
                         "長さ18文字、または 'auto'。自分のIDがわからない場合は、 "
@@ -221,7 +221,7 @@ class Config:
                 raise HelpfulError(
                     "OwnerIDオプションの無効なパラメータ\"auto\"です。",
 
-                    "ボットアカウントのみが "auto"オプションを使用できます。 "
+                    "ボットアカウントのみがautoオプションを使用できます。 "
                     "設定でOwnerIDを設定してください。",
 
                     preface=self._confpreface2
@@ -286,7 +286,7 @@ class Config:
 
             except Exception as e:
                 print(flush=True)
-                log.critical("config/example_options.iniを{}にコピーできません".format(self.config_file), exc_info=e)
+                log.critical("Unable to copy config/example_options.ini to {}".format(self.config_file), exc_info=e)
                 sys.exit(2)
 
     def find_autoplaylist(self):
