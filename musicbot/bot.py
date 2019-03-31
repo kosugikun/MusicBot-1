@@ -488,7 +488,7 @@ class MusicBot(discord.Client):
                 newmsg = '%s  - あなたの曲 `%s`は現在`%s`で再生中です！' % (
                     entry.meta['author'].mention, entry.title, player.voice_client.channel.name)
             else:
-                newmsg = '現在`％s`で再生中:`％s`は`%s`によって追加されました' % (
+                newmsg = '現在`%s`で再生中:`%s`は`%s`によって追加されました' % (
                     player.voice_client.channel.name, entry.title, entry.meta['author'].name)
 
             if self.server_specific_data[channel.guild]['last_np_msg']:
@@ -1612,7 +1612,7 @@ class MusicBot(discord.Client):
         # TODO: actually calculate wait per song in the process function and return that too
 
         # This is technically inaccurate since bad songs are ignored but still take up time
-        log.info("{:.2f} /ソングで{}。{}秒以内に{}/{}ソング、{:+.2g} /ソングを予想通り({}s)から処理しました".format(
+        log.info("Processed {}/{} songs in {} seconds at {:.2f}s/song, {:+.2g}/song from expected ({}s)".format(
             songs_processed,
             num_songs,
             fixg(ttime),
