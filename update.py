@@ -28,11 +28,11 @@ def finalize():
     print("完了しました。")
 
 def main():
-    print('Starting...')
+    print('起動...')
 
     # Make sure that we're in a Git repository
     if not os.path.isdir('.git'):
-        raise EnvironmentError("This isn't a Git repository.")
+        raise EnvironmentError("これはGitリポジトリではありません。")
 
     # Make sure that we can actually use Git on the command line
     # because some people install Git Bash without allowing access to Windows CMD
@@ -52,7 +52,7 @@ def main():
             try:
                 subprocess.check_call('git reset --hard', shell=True)
             except subprocess.CalledProcessError:
-                raise OSError("Could not reset the directory to a clean state.")
+                raise OSError("ディレクトリをクリーンな状態にリセットできませんでした。")
         else:
             wowee = y_n('OK、ボットの更新をスキップします。まだ依存関係を更新しますか？')
             if wowee:
