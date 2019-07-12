@@ -143,7 +143,7 @@ log.addHandler(tfh)
 
 def finalize_logging():
     if os.path.isfile("logs/musicbot.log"):
-        log.info("Moving old musicbot log")
+        log.info("古いMusicBotのログを移動します。")
         try:
             if os.path.isfile("logs/musicbot.log.last"):
                 os.unlink("logs/musicbot.log.last")
