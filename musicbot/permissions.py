@@ -59,7 +59,7 @@ class Permissions:
         self.config = configparser.ConfigParser(interpolation=None)
 
         if not self.config.read(config_file, encoding='utf-8'):
-            log.info("Permissions file not found, copying example_permissions.ini")
+            log.info("example_permissions.iniをコピーしたPermissionsファイルが見つかりません")
 
             try:
                 shutil.copy('config/example_permissions.ini', config_file)
