@@ -307,7 +307,7 @@ def req_ensure_env():
 
         assert importlib.util.find_spec('musicbot'), "musicbot module is not importable"
     except AssertionError as e:
-        log.critical("Failed environment check, %s", e)
+        log.critical("環境チェックに失敗しました、%s", e)
         bugger_off()
 
     try:

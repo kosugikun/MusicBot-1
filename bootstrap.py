@@ -255,7 +255,7 @@ class EnsurePython(SetupTask):
 
         # TODO: Move to _restart
         # Restart into the new executable.
-        print("Rebooting into Python {}...".format(TARGET_PY_VERSION))
+        print("Python {}で再起動しています...".format(TARGET_PY_VERSION))
         # Use os.execl to switch program
         os.execl("/usr/local/bin/{}".format(executable), "{}".format(executable), __file__)
 
@@ -511,7 +511,7 @@ class EnsurePip(SetupTask):
 
 
 class GitCloneMusicbot(SetupTask):
-    GIT_URL = "https://github.com/Just-Some-Bots/MusicBot.git"
+    GIT_URL = "https://github.com/Cosgy-Dev/MusicBot.git"
     GIT_CMD = "git clone --depth 10 --no-single-branch %s %s" % (GIT_URL, INSTALL_DIR)
 
     def download(self):
@@ -519,7 +519,7 @@ class GitCloneMusicbot(SetupTask):
         if os.path.isdir(INSTALL_DIR):
             r = yes_no('ここには%sというフォルダーが既に存在します。 上書きしますか？' % INSTALL_DIR)
             if r is False:
-                print('Exiting. Use the --dir parameter when running this script to specify a different folder.')
+                print('終了します。 このスクリプトの実行時に--dirパラメーターを使用して、別のフォルダーを指定します。')
                 sys.exit(1)
             else:
                 os.rmdir(INSTALL_DIR)

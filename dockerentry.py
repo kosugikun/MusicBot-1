@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#This file provide a new docker entrypoint which would try to update dependency before run
+#このファイルは、実行前に依存関係を更新しようとする新しいdockerエントリポイントを提供します
 
 import os
 import subprocess

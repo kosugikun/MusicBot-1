@@ -1,10 +1,10 @@
 FROM alpine:edge
 
-# Add project source
+# プロジェクトソースを追加
 WORKDIR /usr/src/musicbot
 COPY . ./
 
-# Install dependencies
+# 依存関係をインストールする
 RUN apk update \
 && apk add --no-cache \
   ca-certificates \
@@ -13,7 +13,7 @@ RUN apk update \
   python3 \
   libsodium-dev \
 \
-# Install build dependencies
+# ビルドの依存関係をインストールする
 && apk add --no-cache --virtual .build-deps \
   gcc \
   git \
@@ -22,14 +22,14 @@ RUN apk update \
   musl-dev \
   python3-dev \
 \
-# Install pip dependencies
+# pip依存関係をインストールする
 && pip3 install --no-cache-dir -r requirements.txt \
 && pip3 install --upgrade --force-reinstall --version websockets==4.0.1 \
 \
-# Clean up build dependencies
+# ビルドの依存関係をクリーンアップする
 && apk del .build-deps
 
-# Create volume for mapping the config
+# 構成をマッピングするためのボリュームを作成します
 VOLUME /usr/src/musicbot/config
 
 ENV APP_ENV=docker
