@@ -939,7 +939,7 @@ class MusicBot(discord.Client):
             log.error("{}の例外".format(event), exc_info=True)
 
     async def on_resumed(self):
-        log.info("\nDiscordに再接 続しました。\n")
+        log.info("\nDiscordに再接続しました。\n")
 
     async def on_ready(self):
         dlogger = logging.getLogger('discord')
