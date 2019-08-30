@@ -7,7 +7,7 @@ import audioop
 import subprocess
 import re
 
-from discord import FFmpegPCMAudio, PCMVolumeTransformer
+from discord import FFmpegPCMAudio, PCMVolumeTransformer, AudioSource
 
 from enum import Enum
 from array import array
@@ -96,6 +96,23 @@ class MusicPlayerState(Enum):
     def __str__(self):
         return self.name
 
+class SourcePlaybackCounter(AudioSource):
+    def __init__(self, source, progress = 0):
+        self._source = source
+        self.progress = progress
+
+    def read(self):
+        res = self._source.read()
+        if res:
+            self.progress += 1
+        return res
+
+    def get_progress(self):
+        return self.progress * 0.02
+
+    def cleanup(self):
+        self._source.cleanup()
+
 
 class MusicPlayer(EventEmitter, Serializable):
     def __init__(self, bot, voice_client, playlist):
@@ -115,6 +132,8 @@ class MusicPlayer(EventEmitter, Serializable):
         self._current_entry = None
         self._stderr_future = None
 
+        self._source = None
+
         self.playlist.on('entry-added', self.on_entry_added)
 
     @property
@@ -124,8 +143,8 @@ class MusicPlayer(EventEmitter, Serializable):
     @volume.setter
     def volume(self, value):
         self._volume = value
-        if self._current_player:
-            self._current_player.source.volume = value
+        if self._source:
+            self._source._source.volume = value
 
     def on_entry_added(self, playlist, entry):
         if self.is_stopped:
@@ -154,7 +173,7 @@ class MusicPlayer(EventEmitter, Serializable):
             self._kill_current_player()
             return
 
-        raise ValueError('%s状態から再生を再開できません' % self.state)
+        raise ValueError('%sから再生を再開できません' % self.state)
 
     def pause(self):
         if self.is_playing:
@@ -169,7 +188,7 @@ class MusicPlayer(EventEmitter, Serializable):
         elif self.is_paused:
             return
 
-        raise ValueError('%s状態の音楽プレーヤーを一時停止できません' % self.state)
+        raise ValueError('%sの音楽プレーヤーを一時停止できません' % self.state)
 
     def kill(self):
         self.state = MusicPlayerState.DEAD
@@ -185,6 +204,7 @@ class MusicPlayer(EventEmitter, Serializable):
             self._kill_current_player()
 
         self._current_entry = None
+        self._source = None
 
         if self._stderr_future.done() and self._stderr_future.exception():
             # I'm not sure that this would ever not be done if it gets to this point
@@ -194,27 +214,27 @@ class MusicPlayer(EventEmitter, Serializable):
         if not self.bot.config.save_videos and entry:
             if not isinstance(entry, StreamPlaylistEntry):
                 if any([entry.filename == e.filename for e in self.playlist.entries]):
-                    log.debug("\"{}\"の削除をスキップして、キューにある曲を見つけました".format(entry.filename))
+                    log.debug("\"{}\"の削除をスキップし、キューにある曲を見つけました".format(entry.filename))
 
                 else:
-                    log.debug("ファイルを削除します:{}".format(os.path.relpath(entry.filename)))
+                    log.debug("ファイルを削除中: {}".format(os.path.relpath(entry.filename)))
                     filename = entry.filename
                     for x in range(30):
                         try:
                             os.unlink(filename)
-                            log.debug('ファイルが削除されました: {0}'.format(filename))
+                            log.debug('ファイルを削除しました: {0}'.format(filename))
                             break
                         except PermissionError as e:
                             if e.winerror == 32:  # File is in use
-                                log.error('Can\'t delete file, it is currently in use: {0}').format(filename)
+                                log.error('ファイルを削除できません。現在使用中です:{0}'.format(filename))
                         except FileNotFoundError:
-                            log.debug('削除する{}が見つかりませんでした。スキップしています。'.format(filename), exc_info=True)
+                            log.debug('削除対象の{}が見つからなかったため、見つかりませんでした。 スキップ。'.format(filename), exc_info=True)
                             break
                         except Exception:
                             log.error("{}を削除しようとしてエラーが発生しました".format(filename), exc_info=True)
                             break
                     else:
-                        print("[設定：SaveVideos]ファイル{}を削除できませんでした。".format(
+                        print("[Config:SaveVideos] {}を削除できませんでした。あきらめて先に進みます".format(
                             os.path.relpath(filename)))
 
         self.emit('finished-playing', player=self, entry=entry)
@@ -251,7 +271,7 @@ class MusicPlayer(EventEmitter, Serializable):
                 try:
                     entry = await self.playlist.get_next_entry()
                 except:
-                    log.warning("Failed to get entry, retrying", exc_info=True)
+                    log.warning("エントリの取得に失敗しました。再試行しています", exc_info=True)
                     self.loop.call_later(0.1, self.play)
                     return
 
@@ -270,19 +290,21 @@ class MusicPlayer(EventEmitter, Serializable):
                 else:
                     aoptions = "-vn"
 
-                log.ffmpeg("オプション付きのプレーヤーを作成しています:{} {} {}".format(boptions, aoptions, entry.filename))
+                log.ffmpeg("オプションを使用してプレーヤーを作成する: {} {} {}".format(boptions, aoptions, entry.filename))
 
-                source = PCMVolumeTransformer(
-                    FFmpegPCMAudio(
-                        entry.filename,
-                        before_options=boptions,
-                        options=aoptions,
-                        stderr=subprocess.PIPE
-                    ),
-                    self.volume
+                self._source = SourcePlaybackCounter(
+                    PCMVolumeTransformer(
+                        FFmpegPCMAudio(
+                            entry.filename,
+                            before_options=boptions,
+                            options=aoptions,
+                            stderr=subprocess.PIPE
+                        ),
+                        self.volume
+                    )
                 )
-                log.debug('{1}を使用して{0}をプレイ中'.format(source, self.voice_client))
-                self.voice_client.play(source, after=self._playback_finished)
+                log.debug('{1}を使用して{0}をプレイ'.format(self._source, self.voice_client))
+                self.voice_client.play(self._source, after=self._playback_finished)
 
                 self._current_player = self.voice_client
 
@@ -294,7 +316,7 @@ class MusicPlayer(EventEmitter, Serializable):
 
                 stderr_thread = Thread(
                     target=filter_stderr,
-                    args=(self._current_player._player.source.original._process, self._stderr_future),
+                    args=(self._source._source.original._process, self._stderr_future),
                     name="stderr reader"
                 )
 
@@ -339,7 +361,7 @@ class MusicPlayer(EventEmitter, Serializable):
         try:
             return json.loads(raw_json, object_hook=Serializer.deserialize)
         except Exception as e:
-            log.exception("プレーヤーのシリアル化解除に失敗しました", e)
+            log.exception("プレーヤーのデシリアライズに失敗しました", e)
 
 
     @property
@@ -364,8 +386,8 @@ class MusicPlayer(EventEmitter, Serializable):
 
     @property
     def progress(self):
-        if self._current_player:
-            return round(self._current_player._player.loops * 0.02)
+        if self._source:
+            return self._source.get_progress()
             # TODO: Properly implement this
             #       Correct calculation should be bytes_read/192k
             #       192k AKA sampleRate * (bitDepth / 8) * channelCount
@@ -403,23 +425,23 @@ def check_stderr(data:bytes):
     try:
         data = data.decode('utf8')
     except:
-        log.ffmpeg("ffmpegからのメッセージをデコード中の不明なエラー", exc_info=True)
+        log.ffmpeg("ffmpegからの不明なエラーデコードメッセージ", exc_info=True)
         return True # fuck it
 
-    # log.ffmpeg("ffmpegからデコードされたデータ:{}".format(data))
+    # log.ffmpeg("Decoded data from ffmpeg: {}".format(data))
 
     # TODO: Regex
     warnings = [
-        "ヘッダーがありません",
-        "ビットレートから期間を推定する、これは不正確かもしれません",
-        "AVStream.codecを使用してコーデックパラメータをマルチプレクサに渡すことは推奨されていません。代わりにAVStream.codecparを使用してください。",
-        "アプリケーションがストリーム内で無効、単調増加ではないdtsをマルチプレクサに提供しました",
-        "最後のメッセージの繰り返し",
-        "クローズメッセージを送信できませんでした",
-        "decode_band_types：END要素が見つかる前に入力バッファを使い果たしました"
+        "Header missing",
+        "Estimating duration from birate, this may be inaccurate",
+        "Using AVStream.codec to pass codec parameters to muxers is deprecated, use AVStream.codecpar instead.",
+        "Application provided invalid, non monotonically increasing dts to muxer in stream",
+        "Last message repeated",
+        "Failed to send close message",
+        "decode_band_types: Input buffer exhausted before END element found"
     ]
     errors = [
-        "入力処理中に無効なデータが見つかりました", # need to regex this properly, its both a warning and an error
+        "入力の処理中に無効なデータが見つかりました", # need to regex this properly, its both a warning and an error
     ]
 
     if any(msg in data for msg in warnings):

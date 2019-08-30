@@ -52,7 +52,7 @@ class PermissionsError(CommandError):
 
 # Error with pretty formatting for hand-holding users through various errors
 class HelpfulError(MusicbotException):
-    def __init__(self, issue, solution, *, preface="An error has occured:", footnote='', expire_in=0):
+    def __init__(self, issue, solution, *, preface="エラーが発生しました:", footnote='', expire_in=0):
         self.issue = issue
         self.solution = solution
         self.preface = preface
@@ -73,8 +73,8 @@ class HelpfulError(MusicbotException):
     def message_no_format(self):
         return self._message_fmt.format(
             preface  = self.preface,
-            problem  = self._pretty_wrap(self.issue,    "問題:", width=None),
-            solution = self._pretty_wrap(self.solution, "溶液:", width=None),
+            problem  = self._pretty_wrap(self.issue,    "  Problem:", width=None),
+            solution = self._pretty_wrap(self.solution, "  Solution:", width=None),
             footnote = self.footnote
         )
 

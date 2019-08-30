@@ -54,7 +54,7 @@ except ImportError:
 
 # Arguments
 ap = argparse.ArgumentParser()
-ap.add_argument('--dir', help='the name of the directory to install to (default: MusicBot)')
+ap.add_argument('--dir', help='インストール先のディレクトリの名前(デフォルト:MusicBot)')
 args = ap.parse_args()
 
 # Logging setup goes here
@@ -71,7 +71,7 @@ MINIMUM_PY_VERSION = (3, 5)
 TARGET_PY_VERSION = "3.5.2"
 
 if SYS_PLATFORM not in PLATFORMS:
-    raise RuntimeError('Unsupported system "%s"' % SYS_PLATFORM)
+    raise RuntimeError('"%s"はサポートされていないシステムです。' % SYS_PLATFORM)
 
 if SYS_PLATFORM == 'linux2':
     SYS_PLATFORM = 'linux'
@@ -154,11 +154,11 @@ class SetupTask(object):
 
         if item.endswith('_dist'):
             try:
-                # distエイリアスをチェックしてください。 setup_dist -> setup_win32
+                # check for dist aliases, ex: setup_dist -> setup_win32
                 return object.__getattribute__(self, item.rsplit('_', 1)[0] + '_' + SYS_PLATFORM)
             except:
                 try:
-                    # distの変種がない場合は、ジェネリックにフォールバックしてみてください。例: setup_dist -> setup
+                    # If there's no dist variant, try to fallback to the generic, ex: setup_dist -> setup
                     return object.__getattribute__(self, item.rsplit('_', 1)[0])
                 except:
                     pass
@@ -173,19 +173,19 @@ class SetupTask(object):
 
     def check(self):
         """
-        コンポーネントが存在し、動作しているかどうかを確認します
+        Check to see if the component exists and works
         """
         pass
 
     def download(self):
         """
-        コンポーネントをダウンロードする
+        Download the component
         """
         pass
 
     def setup(self, data):
         """
-        コンポーネントとその他の必要な作業をインストールする
+        Install the componenet and any other required tasks
         """
         pass
 
@@ -204,7 +204,7 @@ class EnsurePython(SetupTask):
         if PY_VERSION >= MINIMUM_PY_VERSION:
             return True
 
-        # TODO:Python 3.5をチェックし、見つかったら再起動します
+        # TODO: Check for python 3.5 and restart if found
 
     def download_win32(self):
         exe, _ = tmpdownload(self.PYTHON_EXE.format(ver=TARGET_PY_VERSION))
@@ -255,7 +255,7 @@ class EnsurePython(SetupTask):
 
         # TODO: Move to _restart
         # Restart into the new executable.
-        print("Python {}を再起動しています...".format(TARGET_PY_VERSION))
+        print("Rebooting into Python {}...".format(TARGET_PY_VERSION))
         # Use os.execl to switch program
         os.execl("/usr/local/bin/{}".format(executable), "{}".format(executable), __file__)
 
@@ -405,7 +405,7 @@ class EnsureFFmpeg(SetupTask):
 
 class EnsureOpus(SetupTask):
     """
-    libopus.so.0またはそれが呼ばれることになるものは何でも（ctypes.find_library）探してください
+    Locate libopus.so.0 or whatever it'd be called (maybe ctypes.find_library)
     """
 
     def check_win32(self):
@@ -429,7 +429,7 @@ class EnsureOpus(SetupTask):
 
 class EnsureFFI(SetupTask):
     """
-    上記のfind_libraryを参照してください。
+    see: find_library up above
     """
 
     def check_win32(self):
@@ -511,15 +511,15 @@ class EnsurePip(SetupTask):
 
 
 class GitCloneMusicbot(SetupTask):
-    GIT_URL = "https://github.com/Cosgy-Dev/MusicBot.git"
+    GIT_URL = "https://github.com/Just-Some-Bots/MusicBot.git"
     GIT_CMD = "git clone --depth 10 --no-single-branch %s %s" % (GIT_URL, INSTALL_DIR)
 
     def download(self):
-        print("Gitを使用してファイルを複製しています...")
+        print("Gitを使用してファイルを複製する...")
         if os.path.isdir(INSTALL_DIR):
-            r = yes_no('%sというフォルダが既に存在します。上書きしますか？' % INSTALL_DIR)
+            r = yes_no('ここには%sというフォルダーが既に存在します。 上書きしますか？' % INSTALL_DIR)
             if r is False:
-                print('終了しています。このスクリプトを実行するときに--dirパラメーターを使用して、別のフォルダーを指定してください。')
+                print('Exiting. Use the --dir parameter when running this script to specify a different folder.')
                 sys.exit(1)
             else:
                 os.rmdir(INSTALL_DIR)
@@ -570,18 +570,18 @@ class SetupMusicbot(SetupTask):
 
 
 def preface():
-    print(" MusicBotブートストラップ(v0.1)".center(50, '#'))
-    print("このスクリプトは、MusicBotを現在のディレクトリの '%s'というフォルダにインストールします。" % INSTALL_DIR,
-          "\nシステムや環境に応じて、いくつかのパッケージと依存関係がインストールされます。",
-          "\n問題がないことを確認するために、おそらくこのスクリプトを管理者として実行する必要があります。")
+    print(" MusicBot JP Bootstrapper (v0.1) ".center(50, '#'))
+    print("このスクリプトは、MusicBot JPを現在のディレクトリの'%s'フォルダへインストールします。" % INSTALL_DIR,
+          "\nシステムと環境に応じて、いくつかのパッケージと依存関係がインストールされます。",
+          "\n問題がないことを確認するには、おそらくこのスクリプトを管理者として実行する必要があります。")
     print()
-    raw_input("enterを押して始めます。 ")
+    raw_input("Enterキーを押して開始します。 ")
     print()
 
 
 def main():
     preface()
-    print("Python%sでのMusicBotのブートストラップ。" % '.'.join(list(map(str, PY_VERSION))))
+    print("Python%sでのMusicBotのブートストラップを行います。" % '.'.join(list(map(str, PY_VERSION))))
 
     EnsurePython.run()
     EnsureBrew.run()
@@ -604,6 +604,6 @@ if __name__ == '__main__':
     except Exception:
         traceback.print_exc()
         # noinspection PyUnboundLocalVariable
-        raw_input("エラーが発生しました。Enterを押して終了します。 ")
+        raw_input("エラーが発生しました。Enterキーを押して終了します。 ")
     finally:
         TEMP_DIR.cleanup()

@@ -51,14 +51,14 @@ class Spotify:
         """Makes a GET request and returns the results"""
         async with self.aiosession.get(url, headers=headers) as r:
             if r.status != 200:
-                raise SpotifyError('Issue making GET request to {0}: [{1.status}] {2}'.format(url, r, await r.json()))
+                raise SpotifyError('{0}へのGETリクエストの発行に関する問題: [{1.status}] {2}'.format(url, r, await r.json()))
             return await r.json()
 
     async def make_post(self, url, payload, headers=None):
         """Makes a POST request and returns the results"""
         async with self.aiosession.post(url, data=payload, headers=headers) as r:
             if r.status != 200:
-                raise SpotifyError('Issue making POST request to {0}: [{1.status}] {2}'.format(url, r, await r.json()))
+                raise SpotifyError('{0}へのPOSTリクエストの発行に関する問題: [{1.status}] {2}'.format(url, r, await r.json()))
             return await r.json()
 
     async def get_token(self):
@@ -68,10 +68,10 @@ class Spotify:
 
         token = await self.request_token()
         if token is None:
-            raise SpotifyError('Spotifyからトークンを要求しましたが、最終的には取得できませんでした')
+            raise SpotifyError('Spotifyからトークンをリクエストしましたが、トークンを取得できませんでした')
         token['expires_at'] = int(time.time()) + token['expires_in']
         self.token = token
-        log.debug('新しいアクセストークンを作成しました:{0}'.format(token))
+        log.debug('新しいアクセストークンを作成しました: {0}'.format(token))
         return self.token['access_token']
 
     async def check_token(self, token):

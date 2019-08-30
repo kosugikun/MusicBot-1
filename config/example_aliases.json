@@ -1,5 +1,6 @@
 {
     "play": ["p"],
     "skip": ["s"],
-    "queue": ["q"]
+    "queue": ["q"],
+    "disconnect": ["leave"]
 }

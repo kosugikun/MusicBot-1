@@ -41,7 +41,7 @@ class PIP(object):
             return e.returncode
         except:
             traceback.print_exc()
-            print("-mメソッドを使用したときのエラー")
+            print("-mメソッドの使用エラー")
 
     @classmethod
     def run_python_m(cls, *args, **kwargs):
@@ -143,7 +143,7 @@ log.addHandler(tfh)
 
 def finalize_logging():
     if os.path.isfile("logs/musicbot.log"):
-        log.info("古いMusicBotのログを移動します。")
+        log.info("古いmusicbotログを移動する")
         try:
             if os.path.isfile("logs/musicbot.log.last"):
                 os.unlink("logs/musicbot.log.last")
@@ -180,14 +180,14 @@ def finalize_logging():
     dlog.addHandler(dlh)
 
 
-def bugger_off(msg="続行するにはEnterキーを押してください...", code=1):
+def bugger_off(msg="Enterキーを押して続行します...", code=1):
     input(msg)
     sys.exit(code)
 
 
 # TODO: all of this
 def sanity_checks(optional=True):
-    log.info("要所確認の開始")
+    log.info("互換性チェックの開始")
     ## Required
 
     # Make sure we're on Python 3.5+
@@ -205,7 +205,7 @@ def sanity_checks(optional=True):
     # For rewrite only
     req_check_deps()
 
-    log.info("必須チェックに合格しました。")
+    log.info("互換性チェックに合格しました。")
 
     ## Optional
     if not optional:
@@ -218,22 +218,22 @@ def sanity_checks(optional=True):
 
 
 def req_ensure_py3():
-    log.info("Python 3.5以降かをチェックします。")
+    log.info("Python 3.5+の確認")
 
     if sys.version_info < (3, 5):
-        log.warning("Python 3.5以降が必要です。このバージョンは%sです", sys.version.split()[0])
-        log.warning("Python 3.5を見つけようとしています...")
+        log.warning("Python 3.5以降が必要です。 このバージョンは%sです。", sys.version.split()[0])
+        log.warning("Python 3.5を探しています...")
 
         pycom = None
 
         if sys.platform.startswith('win'):
-            log.info('トライ"py -3.5"')
+            log.info('「py -3.5」を実行します。')
             try:
                 subprocess.check_output('py -3.5 -c "exit()"', shell=True)
                 pycom = 'py -3.5'
             except:
 
-                log.info('トライ "python3"')
+                log.info('"python3"を実行します。')
                 try:
                     subprocess.check_output('python3 -c "exit()"', shell=True)
                     pycom = 'python3'
@@ -241,7 +241,7 @@ def req_ensure_py3():
                     pass
 
             if pycom:
-                log.info("Python 3が見つかりました。ボットを起動しています...")
+                log.info("Python 3が見つかりました。 ボットを起動しています...")
                 pyexec(pycom, 'run.py')
 
                 # I hope ^ works
@@ -249,17 +249,17 @@ def req_ensure_py3():
                 sys.exit(0)
 
         else:
-            log.info('Trying "python3.5"')
+            log.info('"python3.5"を実行します。')
             try:
                 pycom = subprocess.check_output('python3.5 -c "exit()"'.split()).strip().decode()
             except:
                 pass
 
             if pycom:
-                log.info("\n Python 3が見つかりました。以下を使用してボットを再起動します。: %s run.py\n", pycom)
+                log.info("\nPython 3が見つかりました。 以下を使用してボットを再起動します。: %s run.py\n", pycom)
                 pyexec(pycom, 'run.py')
 
-        log.critical("Python 3.5以上が見つかりませんでした。 Python 3.5を使ってボットを実行してください。")
+        log.critical("Python 3.5以降が見つかりませんでした。 Python 3.5を使用してボットを実行してください")
         bugger_off()
 
 
@@ -267,7 +267,9 @@ def req_check_deps():
     try:
         import discord
         if discord.version_info.major < 1:
-            log.critical("このバージョンのMusicBotでは、新しいバージョンのdiscord.py（1.0+）が必要です。あなたのバージョンは{0}です。 update.pyを実行してください。".format(discord.__version__))
+            log.critical(
+                "このバージョンのMusicBot JPには、新しいバージョンのdiscord.py(1.0以降)が必要です。 バージョンは{0}です。 update.pyを実行してみてください。".format(
+                    discord.__version__))
             bugger_off()
     except ImportError:
         # if we can't import discord.py, an error will be thrown later down the line anyway
@@ -275,10 +277,9 @@ def req_check_deps():
 
 
 def req_ensure_encoding():
-    log.info("コンソールエンコーディングの確認")
-
+    log.info("コンソールエンコーディングの確認を実行します。")
     if sys.platform.startswith('win') or sys.stdout.encoding.replace('-', '').lower() != 'utf8':
-        log.info("コンソールのエンコードをUTF-8に設定する")
+        log.info("コンソールエンコーディングをUTF-8に設定します。")
 
         import io
         sys.stdout = io.TextIOWrapper(sys.stdout.detach(), encoding='utf8', line_buffering=True)
@@ -286,49 +287,52 @@ def req_ensure_encoding():
         sys.__stdout__ = sh.stream = sys.stdout
 
         if os.environ.get('PYCHARM_HOSTED', None) not in (None, '0'):
-            log.info("pycharm擬似コンソールで色を有効にする")
+            log.info("Pycharmコンソールでフォントカラーを有効にします。")
             sys.stdout.isatty = lambda: True
 
 
 def req_ensure_env():
-    log.info("正しい環境にいることを確認する")
+    log.info("想定環境であることを確認します。")
 
     if os.environ.get('APP_ENV') != 'docker' and not os.path.isdir(b64decode('LmdpdA==').decode('utf-8')):
-        log.critical(b64decode('Qm90IHdhc24ndCBpbnN0YWxsZWQgdXNpbmcgR2l0LiBSZWluc3RhbGwgdXNpbmcgaHR0cDovL2JpdC5seS9tdXNpY2JvdGRvY3Mu').decode('utf-8'))
+        log.critical(b64decode(
+            'Qm90IHdhc24ndCBpbnN0YWxsZWQgdXNpbmcgR2l0LiBSZWluc3RhbGwgdXNpbmcgaHR0cDovL2JpdC5seS9tdXNpY2JvdGRvY3Mu').decode(
+            'utf-8'))
         bugger_off()
 
     try:
-        assert os.path.isdir('config'), 'フォルダ "config"が見つかりません'
-        assert os.path.isdir('musicbot'), 'フォルダ "musicbot"が見つかりません'
-        assert os.path.isfile('musicbot/__init__.py'), 'musicbotフォルダはPythonモジュールではありません'
+        assert os.path.isdir('config'), 'folder "config" not found'
+        assert os.path.isdir('musicbot'), 'folder "musicbot" not found'
+        assert os.path.isfile('musicbot/__init__.py'), 'musicbot folder is not a Python module'
 
-        assert importlib.util.find_spec('musicbot'), "musicbotモジュールはインポートできません"
+        assert importlib.util.find_spec('musicbot'), "musicbot module is not importable"
     except AssertionError as e:
-        log.critical("環境チェックに失敗しました、%s", e)
+        log.critical("Failed environment check, %s", e)
         bugger_off()
 
     try:
         os.mkdir('musicbot-test-folder')
     except Exception:
         log.critical("現在の作業ディレクトリは書き込み可能ではないようです")
-        log.critical("書き込み可能なフォルダにボットを移動してください。")
+        log.critical("ボットを書き込み可能なフォルダーに移動してください")
         bugger_off()
     finally:
         rmtree('musicbot-test-folder', True)
 
     if sys.platform.startswith('win'):
-        log.info("ローカルビン/フォルダをパスに追加する")
+        log.info("ローカルbins/フォルダーをパスに追加")
         os.environ['PATH'] += ';' + os.path.abspath('bin/')
-        sys.path.append(os.path.abspath('bin/')) # might as well
+        sys.path.append(os.path.abspath('bin/'))  # might as well
 
 
 def req_ensure_folders():
     pathlib.Path('logs').mkdir(exist_ok=True)
     pathlib.Path('data').mkdir(exist_ok=True)
 
+
 def opt_check_disk_space(warnlimit_mb=200):
-    if disk_usage('.').free < warnlimit_mb*1024*2:
-        log.warning("このデバイスには%sMB未満の空き容量しか残っていません" % warnlimit_mb)
+    if disk_usage('.').free < warnlimit_mb * 1024 * 2:
+        log.warning("このデバイスに残っている空き容量は%sMB未満です" % warnlimit_mb)
 
 
 #################################################
@@ -373,7 +377,7 @@ def main():
             m.run()
 
         except SyntaxError:
-            log.exception("構文エラー(これはバグです。あなたの責任ではありません)")
+            log.exception("構文エラー(これはバグであり、あなたのせいではありません)")
             break
 
         except ImportError:
@@ -387,14 +391,14 @@ def main():
 
                 err = PIP.run_install('--upgrade -r requirements.txt')
 
-                if err: # TODO: add the specific error check back as not to always tell users to sudo it
+                if err:  # TODO: add the specific error check back as not to always tell users to sudo it
                     print()
-                    log.critical("依存関係をインストールするために%sが必要になるかもしれません。" %
+                    log.critical("依存関係をインストールするには%sが必要になる場合があります。" %
                                  ['use sudo', 'run as admin'][sys.platform.startswith('win')])
                     break
                 else:
                     print()
-                    log.info("それがうまくいったことを願いましょう")
+                    log.info("OK")
                     print()
             else:
                 log.exception("不明なImportError、終了します。")
@@ -413,7 +417,7 @@ def main():
                     loops = 0
                     pass
             else:
-                log.exception("ボットの起動エラー")
+                log.exception("ボット起動時にエラーが発生しました。")
 
         finally:
             if not m or not m.init_ok:
@@ -427,11 +431,11 @@ def main():
 
         sleeptime = min(loops * 2, max_wait_time)
         if sleeptime:
-            log.info("{}秒後に再起動しています...".format(loops*2))
+            log.info("{}秒で再起動します...".format(loops * 2))
             time.sleep(sleeptime)
 
     print()
-    log.info("全部完了しました。")
+    log.info("全て完了しました。")
 
 
 if __name__ == '__main__':

@@ -59,7 +59,7 @@ class Permissions:
         self.config = configparser.ConfigParser(interpolation=None)
 
         if not self.config.read(config_file, encoding='utf-8'):
-            log.info("example_permissions.iniをコピーしたPermissionsファイルが見つかりません")
+            log.info("example_permissions.iniをコピーして、許可ファイルが見つかりません")
 
             try:
                 shutil.copy('config/example_permissions.ini', config_file)
@@ -67,7 +67,7 @@ class Permissions:
 
             except Exception as e:
                 traceback.print_exc()
-                raise RuntimeError("Unable to copy config/example_permissions.ini to {}: {}".format(config_file, e))
+                raise RuntimeError("config/example_permissions.iniを{}にコピーできません: {}".format(config_file, e))
 
         self.default_group = PermissionGroup('Default', self.config['Default'])
         self.groups = set()
@@ -80,7 +80,7 @@ class Permissions:
             owner_group = PermissionGroup('Owner (auto)', self.config['Owner (auto)'], fallback=Permissive)
             
         else:
-            log.info("[Owner(auto)]セクションが見つかりません。許可されたデフォルトにフォールバックします")
+            log.info("[Owner (auto)]セクションが見つかりません。許容デフォルトにフォールバックします")
             # Create a fake section to fallback onto the default permissive values to grant to the owner
             # noinspection PyTypeChecker
             owner_group = PermissionGroup("Owner (auto)", configparser.SectionProxy(self.config, "Owner (auto)"), fallback=Permissive)
@@ -195,7 +195,7 @@ class PermissionGroup:
             self.max_search_items = PermissionsDefaults.MaxSearchItems
 
         if int(self.max_search_items) > 100:
-            log.warning('Max search items can\'t be larger than 100. Setting to 100.')
+            log.warning('最大検索項目は100を超えることはできません。100に設定します。')
             self.max_search_items = 100
 
     @staticmethod

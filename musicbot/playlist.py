@@ -75,34 +75,34 @@ class Playlist(EventEmitter, Serializable):
 
         # TODO: Sort out what happens next when this happens
         if info.get('_type', None) == 'playlist':
-            raise WrongEntryTypeError("This is a playlist.", True, info.get('webpage_url', None) or info.get('url', None))
+            raise WrongEntryTypeError("これはプレイリストです。", True, info.get('webpage_url', None) or info.get('url', None))
 
         if info.get('is_live', False):
             return await self.add_stream_entry(song_url, info=info, **meta)
 
         # TODO: Extract this to its own function
         if info['extractor'] in ['generic', 'Dropbox']:
-            log.debug('Detected a generic extractor, or Dropbox')
+            log.debug('汎用抽出器またはDropboxを検出しました')
             try:
                 headers = await get_header(self.bot.aiosession, info['url'])
                 content_type = headers.get('CONTENT-TYPE')
-                log.debug("コンテンツタイプを取得{}".format(content_type))
+                log.debug("コンテンツタイプ{}を取得しました".format(content_type))
             except Exception as e:
-                log.warning("URL {}({})のコンテンツタイプを取得できませんでした".format(song_url, e))
+                log.warning("URL {}のコンテンツタイプを取得できませんでした ({})".format(song_url, e))
                 content_type = None
 
             if content_type:
                 if content_type.startswith(('application/', 'image/')):
                     if not any(x in content_type for x in ('/ogg', '/octet-stream')):
                         # How does a server say `application/ogg` what the actual fuck
-                        raise ExtractionError("URL%sのコンテンツタイプ\"%s\"が無効です" % (content_type, song_url))
+                        raise ExtractionError("URL %sのコンテンツタイプ\"%s\"が無効です" % (content_type, song_url))
 
                 elif content_type.startswith('text/html') and info['extractor'] == 'generic':
-                    log.warning("content-typeにtext/htmlを付けました。これはストリームかもしれません。")
+                    log.warning("content-typeのtext/htmlを取得しました。これはストリームである可能性があります。")
                     return await self.add_stream_entry(song_url, info=info, **meta)  # TODO: Check for shoutcast/icecast
 
                 elif not content_type.startswith(('audio/', 'video/')):
-                    log.warning("url {}に対する疑わしいcontent-type\"{}\"".format(content_type, song_url))
+                    log.warning("URL {}の疑わしいコンテンツタイプ\"{}\"".format(content_type, song_url))
 
         entry = URLPlaylistEntry(
             self,
@@ -124,7 +124,7 @@ class Playlist(EventEmitter, Serializable):
 
             except DownloadError as e:
                 if e.exc_info[0] == UnsupportedError:  # ytdl doesn't like it but its probably a stream
-                    log.debug("コンテンツが直接ストリームであると仮定する")
+                    log.debug("コンテンツがダイレクトストリームであると仮定する")
 
                 elif e.exc_info[0] == URLError:
                     if os.path.exists(os.path.abspath(song_url)):
@@ -135,7 +135,7 @@ class Playlist(EventEmitter, Serializable):
 
                 else:
                     # traceback.print_exc()
-                    raise ExtractionError("未知のエラー:{}".format(e))
+                    raise ExtractionError("未知のエラー: {}".format(e))
 
             except Exception as e:
                 log.error('{}({})から情報を抽出できませんでした。直接にフォールバックしました'.format(song_url, e), exc_info=True)
@@ -208,12 +208,12 @@ class Playlist(EventEmitter, Serializable):
                 except Exception as e:
                     baditems += 1
                     log.warning("アイテムを追加できませんでした", exc_info=e)
-                    log.debug("Item: {}".format(item), exc_info=True)
+                    log.debug("項目: {}".format(item), exc_info=True)
             else:
                 baditems += 1
 
         if baditems:
-            log.info("無効な{}エントリをスキップしました".format(baditems))
+            log.info("{}個の不正なエントリをスキップしました".format(baditems))
 
         return entry_list, position
 
@@ -250,12 +250,12 @@ class Playlist(EventEmitter, Serializable):
 
                 except Exception as e:
                     baditems += 1
-                    log.error("エントリ{}の追加中にエラーが発生しました".format(entry_data['id']), exc_info=e)
+                    log.error("エントリの追加エラー{}".format(entry_data['id']), exc_info=e)
             else:
                 baditems += 1
 
         if baditems:
-            log.info("Skipped {} bad entries".format(baditems))
+            log.info("{}個の不正なエントリをスキップしました".format(baditems))
 
         return gooditems
 
@@ -291,12 +291,12 @@ class Playlist(EventEmitter, Serializable):
 
                 except Exception as e:
                     baditems += 1
-                    log.error("エントリ{}の追加中にエラーが発生しました".format(entry_data['id']), exc_info=e)
+                    log.error("エントリの追加エラー{}".format(entry_data['id']), exc_info=e)
             else:
                 baditems += 1
 
         if baditems:
-            log.info("無効な{}エントリをスキップしました".format(baditems))
+            log.info("{}個の不正なエントリをスキップしました".format(baditems))
 
         return gooditems
 

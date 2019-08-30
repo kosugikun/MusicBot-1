@@ -50,5 +50,5 @@ if [ "$PYTHON37_VERSION" -eq "7" ]; then # Python3.7 = 3.7
     exit
 fi
 
-echo "サポートされていないPythonバージョンを実行しています。"
-echo "3.5.2以上のバージョンのPythonを使用してください。"
+echo "You are running an unsupported Python version."
+echo "Please use a version of Python above 3.5.2."

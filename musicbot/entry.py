@@ -53,7 +53,7 @@ class BasePlaylistEntry(Serializable):
             self._waiting_futures.append(future)
             asyncio.ensure_future(self._download())
 
-        log.debug('{0}の未来を創造しました'.format(self.filename))
+        log.debug('最新の{0}を作成しました'.format(self.filename))
         return future
 
     def _for_each_future(self, cb):
@@ -133,13 +133,13 @@ class URLPlaylistEntry(BasePlaylistEntry):
                 # int() it because persistent queue from pre-rewrite days saved ids as strings
                 meta['channel'] = playlist.bot.get_channel(int(data['meta']['channel']['id']))
                 if not meta['channel']:
-                    log.warning('永続キューからロードされたエントリにチャネルが見つかりません。陳列ID：{}'.format(data['meta']['channel']['id']))
+                    log.warning('永続キューからロードされたエントリにチャネルが見つかりません。 チェンネルID:{}'.format(data['meta']['channel']['id']))
                     meta.pop('channel')
                 elif 'author' in data['meta']:
                     # int() it because persistent queue from pre-rewrite days saved ids as strings
                     meta['author'] = meta['channel'].guild.get_member(int(data['meta']['author']['id']))
                     if not meta['author']:
-                        log.warning('永続キューからロードされたエントリに作成者が見つかりません。オーナーID:{}'.format(data['meta']['author']['id']))
+                        log.warning('永続キューからロードされたエントリに作成者が見つかりません。 著者ID: {}'.format(data['meta']['author']['id']))
                         meta.pop('author')
 
             entry = cls(playlist, url, title, duration, expected_filename, **meta)
@@ -147,7 +147,7 @@ class URLPlaylistEntry(BasePlaylistEntry):
 
             return entry
         except Exception as e:
-            log.error("{}を読み込めませんでした ".format(cls.__name__), exc_info=e)
+            log.error("{}を読み込めませんでした".format(cls.__name__), exc_info=e)
 
     # noinspection PyTypeChecker
     async def _download(self):
@@ -204,12 +204,12 @@ class URLPlaylistEntry(BasePlaylistEntry):
 
                 if expected_fname_base in ldir:
                     self.filename = os.path.join(self.download_folder, expected_fname_base)
-                    log.info("キャッシュのダウンロード:{}".format(self.url))
+                    log.info("キャッシュをダウンロード： {}".format(self.url))
 
                 elif expected_fname_noex in flistdir:
-                    log.info("キャッシュをダウンロードする(別の拡張子):{}".format(self.url))
+                    log.info("キャッシュをダウンロード(異なる拡張子): {}".format(self.url))
                     self.filename = os.path.join(self.download_folder, ldir[flistdir.index(expected_fname_noex)])
-                    log.debug("{}が必要です、{}を取得しました".format(
+                    log.debug("{}が必要で、{}を取得しました".format(
                         self.expected_filename.rsplit('.', 1)[-1],
                         self.filename.rsplit('.', 1)[-1]
                     ))
@@ -221,8 +221,8 @@ class URLPlaylistEntry(BasePlaylistEntry):
                     mean, maximum = await self.get_mean_volume(self.filename)
                     aoptions = '-af "volume={}dB"'.format((maximum * -1))
                 except Exception as e:
-                    log.error('恐らくFFmpegの奇妙なインストールによって引き起こされた、EQの問題解決としてそこにあります。 '
-                              'これはボットの機能には影響しませんが、トラックが均等化されないことを意味します。')
+                    log.error('FFmpegの奇妙なインストールが原因である可能性があります。 '
+                              'これはボットが機能する能力に影響を与えませんでしたが、トラックがイコライズされないことを意味します。')
                     aoptions = "-vn"
             else:
                 aoptions = "-vn"
@@ -241,7 +241,7 @@ class URLPlaylistEntry(BasePlaylistEntry):
 
     async def run_command(self, cmd):
         p = await asyncio.create_subprocess_shell(cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-        log.debug('次のコマンドでasyncioサブプロセス({0})を起動しています。 {1}'.format(p, cmd))
+        log.debug('次のコマンドでasyncioサブプロセス({0})を開始しています: {1}'.format(p, cmd))
         stdout, stderr = await p.communicate()
         return stdout + stderr
 
@@ -267,7 +267,7 @@ class URLPlaylistEntry(BasePlaylistEntry):
         return None
 
     async def get_mean_volume(self, input_file):
-        log.debug('{0}の平均容量を計算する'.format(input_file))
+        log.debug('{0}の平均容量の計算'.format(input_file))
         cmd = '"' + self.get('ffmpeg') + '" -i "' + input_file + '" -af "volumedetect" -f null /dev/null'
         output = await self.run_command(cmd)
         output = output.decode("utf-8")
@@ -289,7 +289,7 @@ class URLPlaylistEntry(BasePlaylistEntry):
 
     # noinspection PyShadowingBuiltins
     async def _really_download(self, *, hash=False):
-        log.info("ダウンロードを開始しました: {}".format(self.url))
+        log.info("ダウンロード開始: {}".format(self.url))
 
         retry = True
         while retry:
@@ -302,8 +302,8 @@ class URLPlaylistEntry(BasePlaylistEntry):
         log.info("ダウンロード完了: {}".format(self.url))
 
         if result is None:
-            log.critical("YTDLが失敗した、みんなパニック")
-            raise ExtractionError("ytdlが壊れて私がその理由を知っていれば地獄")
+            log.critical("YTDLが失敗し、みんなパニック")
+            raise ExtractionError("ytdlが壊れています、理由がわかったらいそいで修正して下さい。")
             # What the fuck do I do now?
 
         self.filename = unhashed_fname = self.playlist.downloader.ytdl.prepare_filename(result)
@@ -376,7 +376,7 @@ class StreamPlaylistEntry(BasePlaylistEntry):
 
             return entry
         except Exception as e:
-            log.error("{}を読み込めませんでした ".format(cls.__name__), exc_info=e)
+            log.error("{}を読み込めませんでした".format(cls.__name__), exc_info=e)
 
     # noinspection PyMethodOverriding
     async def _download(self, *, fallback=False):

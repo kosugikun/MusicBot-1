@@ -2,7 +2,7 @@
     "cmd-resetplaylist-response": "オートプレイリストがリセットされました",
     "cmd-help-invalid": "コマンドが見つかりません",
     "cmd-help-no-perms": "コマンドを実行する権限がありません。 `{}help all` ですべてのコマンドを確認することができます。",
-    "cmd-help-response": "特定のコマンドのヘルプは `{}help [command]` で確認できます。\n詳細: https://Cosgy-Dev.github.io/MusicBot/",
+    "cmd-help-response": "特定のコマンドのヘルプは `{}help [command]` で確認できます。\n",
     "cmd-help-all": "\nあなたが実行できるコマンドのみを表示しています。  `{}help all` ですべてのコマンドを確認することができます。",
     "cmd-blacklist-invalid": "無効なオプション '{0}' が指定されました。 +, -, add, remove を使用してください。",
     "cmd-blacklist-added": "{0} ユーザーがブラックリストに追加されました",

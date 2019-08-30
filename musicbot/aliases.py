@@ -19,12 +19,12 @@ class Aliases:
             example_aliases = Path('config/example_aliases.json')
             if example_aliases.is_file():
                 shutil.copy(str(example_aliases), str(self.aliases_file))
-                log.warning('example_aliases.jsonをコピーしている別名ファイルが見つかりません')
+                log.warning('エイリアスファイルが見でした。example_aliases.jsonをコピーしています')
             else:
                 raise HelpfulError(
-                    "エイリアスファイルが見つかりません。 aliases.jsonもexample_aliases.jsonも見つかりませんでした。",
-                    "アーカイブからファイルを取り戻すか、自分で作り直して内容をコピーして貼り付けてください。 "
-                    "レポから。重要なファイルの削除をやめて！"
+                    "エイリアスファイルがありません。 aliases.jsonもexample_aliases.jsonも見つかりませんでした。",
+                    "アーカイブからファイルを取得するか、自分で再作成して、リポジトリからコンテンツをコピーして貼り付けます。 "
+                    "重要なファイルの削除を停止してください！"
                 )
 
         # parse json
@@ -34,7 +34,7 @@ class Aliases:
             except:
                 raise HelpfulError(
                     "エイリアスファイルの解析に失敗しました。",
-                    "{}が有効なjsonファイルであることを確認して、ボットを再起動してください。".format(str(self.aliases_file))
+                    "{}が有効なjsonファイルであることを確認し、ボットを再起動します。".format(str(self.aliases_file))
                 )
 
         # construct
@@ -42,7 +42,7 @@ class Aliases:
             if not isinstance(cmd, str) or not isinstance(aliases, list):
                 raise HelpfulError(
                     "エイリアスファイルの解析に失敗しました。",
-                    "ドキュメントとconfig {}を正しく参照してください。".format(str(self.aliases_file))
+                    "ドキュメントと{}設定を適切に参照してください！".format(str(self.aliases_file))
                 )
             self.aliases.update({alias.lower(): cmd.lower() for alias in aliases})
     
