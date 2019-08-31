@@ -1230,7 +1230,7 @@ class MusicBot(discord.Client):
             usr = user_mentions[0]
             return Response(self.str.get('cmd-id-other', '**{0}**のIDは`{1}`です').format(usr.name, usr.id), reply=True, delete_after=35)
 
-    async def cmd_about(self, player, channel):
+    async def cmd_about(self):
         """
         使用法:
             {command_prefix}about
