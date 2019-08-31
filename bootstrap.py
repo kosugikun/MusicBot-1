@@ -581,7 +581,7 @@ def preface():
 
 def main():
     preface()
-    print("Python%sでのMusicBotのブートストラップを行います。" % '.'.join(list(map(str, PY_VERSION))))
+    print("Python%sでのMusicBot JPのブートストラップを行います。" % '.'.join(list(map(str, PY_VERSION))))
 
     EnsurePython.run()
     EnsureBrew.run()

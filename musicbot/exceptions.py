@@ -64,8 +64,8 @@ class HelpfulError(MusicbotException):
     def message(self):
         return self._message_fmt.format(
             preface  = self.preface,
-            problem  = self._pretty_wrap(self.issue,    "  Problem:"),
-            solution = self._pretty_wrap(self.solution, "  Solution:"),
+            problem  = self._pretty_wrap(self.issue,    "  問題:"),
+            solution = self._pretty_wrap(self.solution, "  解決:"),
             footnote = self.footnote
         )
 
@@ -73,8 +73,8 @@ class HelpfulError(MusicbotException):
     def message_no_format(self):
         return self._message_fmt.format(
             preface  = self.preface,
-            problem  = self._pretty_wrap(self.issue,    "  Problem:", width=None),
-            solution = self._pretty_wrap(self.solution, "  Solution:", width=None),
+            problem  = self._pretty_wrap(self.issue,    "  問題:", width=None),
+            solution = self._pretty_wrap(self.solution, "  解決:", width=None),
             footnote = self.footnote
         )
 

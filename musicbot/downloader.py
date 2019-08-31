@@ -27,10 +27,11 @@ ytdl_format_options = {
 youtube_dl.utils.bug_reports_message = lambda: ''
 
 '''
-    Alright, here's the problem.  To catch youtube-dl errors for their useful information, I have to
-    catch the exceptions with `ignoreerrors` off.  To not break when ytdl hits a dumb video
-    (rental videos, etc), I have to have `ignoreerrors` on.  I can change these whenever, but with async
-    that's bad.  So I need multiple ytdl objects.
+    さて、ここに問題があります。 有用な情報のyoutube-dlエラーをキャッチするには、
+    「ignoreerrors」をオフにして例外をキャッチする必要があります。 
+    ytdlがダム動画（レンタル動画など）にヒットしたときに壊れないようにするには、
+    「ignoreerrors」をオンにする必要があります。 私はいつでもこれらを変更できますが、
+    それは悪いことです。 したがって、複数のytdlオブジェクトが必要です。
 
 '''
 

@@ -124,7 +124,7 @@ class MusicBot(discord.Client):
                 self.config._spotify = False
                 time.sleep(5)  # make sure they see the problem
 
-    # TODO: Add some sort of `denied` argument for a message to send when someone else tries to use it
+    # TODO: 他の誰かがそれを使用しようとしたときに送信するメッセージにある種の「拒否」引数を追加します
     def owner_only(func):
         @wraps(func)
         async def wrapper(self, *args, **kwargs):
@@ -319,7 +319,7 @@ class MusicBot(discord.Client):
         await asyncio.sleep(after)
         await self.safe_delete_message(message, quiet=True)
 
-    # TODO: Check to see if I can just move this to on_message after the response check
+    # TODO: 応答チェック後にこれをon_messageに移動できるかどうかを確認してください
     async def _manual_delete_check(self, message, *, quiet=False):
         if self.config.delete_invoking:
             await self.safe_delete_message(message, quiet=quiet)
@@ -330,7 +330,7 @@ class MusicBot(discord.Client):
         else:
             vc = None
 
-        # If we've connected to a voice chat and we're in the same voice channel
+        # ボイスチャットに接続していて、同じ音声チャンネルにいる場合
         if not vc or (msg.author.voice and vc == msg.author.voice.channel):
             return True
         else:
@@ -517,7 +517,7 @@ class MusicBot(discord.Client):
             # send it in specified channel
             self.server_specific_data[guild]['last_np_msg'] = await self.safe_send_message(channel, newmsg)
 
-        # TODO: Check channel voice state?
+        # TODO: チャンネルの音声状態を確認しますか？
 
     async def on_player_resume(self, player, entry, **_):
         log.debug('on_player_resume を実行')
@@ -552,7 +552,7 @@ class MusicBot(discord.Client):
         if not player.playlist.entries and not player.current_entry and self.config.auto_playlist:
             if not player.autoplaylist:
                 if not self.autoplaylist:
-                    # TODO: When I add playlist expansion, make sure that's not happening during this check
+                    # TODO: プレイリスト拡張を追加するとき、このチェック中にそれが発生しないことを確認
                     log.warning("オートプレイリストに再生可能な曲がありません。無効にします。")
                     self.config.auto_playlist = False
                 else:
@@ -592,7 +592,7 @@ class MusicBot(discord.Client):
 
                 if info.get('entries', None):  # or .get('_type', '') == 'playlist'
                     log.debug("プレイリストは見つかりましたが、現時点ではサポートされていません。スキップします。")
-                    # TODO: Playlist expansion
+                    # TODO: プレイリストの拡張
 
                 # Do I check the initial conditions again?
                 # not (not player.playlist.entries and not player.current_entry and self.config.auto_playlist)
@@ -603,14 +603,14 @@ class MusicBot(discord.Client):
                 try:
                     await player.playlist.add_entry(song_url, channel=None, author=None)
                 except exceptions.ExtractionError as e:
-                    log.error("Error adding song from autoplaylist: {}".format(e))
+                    log.error("自動プレイリストからの曲の追加エラ: {}".format(e))
                     log.debug('', exc_info=True)
                     continue
 
                 break
 
             if not self.autoplaylist:
-                # TODO: When I add playlist expansion, make sure that's not happening during this check
+                # TODO: プレイリスト拡張を追加するとき、このチェック中にそれが発生しないことを確認
                 log.warning("オートプレイリストに再生可能な曲がありません。無効にします。")
                 self.config.auto_playlist = False
 
@@ -695,7 +695,7 @@ class MusicBot(discord.Client):
 
     async def serialize_queue(self, guild, *, dir=None):
         """
-        Serialize the current queue for a server's player to json.
+        サーバーのプレーヤーの現在のキューをjsonにシリアル化します。
         """
 
         player = self.get_player_in(guild)
@@ -717,7 +717,7 @@ class MusicBot(discord.Client):
 
     async def deserialize_queue(self, guild, voice_client, playlist=None, *, dir=None) -> MusicPlayer:
         """
-        Deserialize a saved queue for a server into a MusicPlayer.  If no queue is saved, returns None.
+        サーバー用に保存されたキューをMusicPlayerにデシリアライズします。 キューが保存されていない場合、Noneを返します。
         """
 
         if playlist is None:
@@ -739,7 +739,7 @@ class MusicBot(discord.Client):
 
     async def write_current_song(self, guild, entry, *, dir=None):
         """
-        Writes the current song to file
+        現在の曲をファイルに書き込みます
         """
         player = self.get_player_in(guild)
         if not player:
@@ -770,7 +770,7 @@ class MusicBot(discord.Client):
 
 
     async def _scheck_ensure_env(self):
-        log.debug("データフォルダーの存在を確認する")
+        log.debug("データフォルダーの存在を確認します。")
         for guild in self.guilds:
             pathlib.Path('data/%s/' % guild.id).mkdir(exist_ok=True)
 
@@ -786,7 +786,7 @@ class MusicBot(discord.Client):
 
 
     async def _scheck_server_permissions(self):
-        log.debug("サーバーのアクセス許可を確認する")
+        log.debug("サーバーのアクセス許可を確認します。")
         pass # TODO
 
     async def _scheck_autoplaylist(self):
@@ -1229,6 +1229,16 @@ class MusicBot(discord.Client):
         else:
             usr = user_mentions[0]
             return Response(self.str.get('cmd-id-other', '**{0}**のIDは`{1}`です').format(usr.name, usr.id), reply=True, delete_after=35)
+
+    async def cmd_about(self, player, channel):
+        """
+        使用法:
+            {command_prefix}about
+
+        MusicBot JPの開発者などの情報などを表示します。
+        このコマンドはMusicBot JPのオリジナルコマンドです。
+        """
+        return Response("MusicBotJP({0})はCosgy Devが日本語訳を行っています。\nCosgy Devスタッフ\n    Kosugi_kun\nボットバージョン:{0}\nDiscord.pyバージョン:{1}".format(BOTVERSION, discord.__version__), delete_after=60)
 
     async def cmd_save(self, player, url=None):
         """

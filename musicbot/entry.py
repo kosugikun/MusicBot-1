@@ -204,7 +204,7 @@ class URLPlaylistEntry(BasePlaylistEntry):
 
                 if expected_fname_base in ldir:
                     self.filename = os.path.join(self.download_folder, expected_fname_base)
-                    log.info("キャッシュをダウンロード： {}".format(self.url))
+                    log.info("キャッシュをダウンロード: {}".format(self.url))
 
                 elif expected_fname_noex in flistdir:
                     log.info("キャッシュをダウンロード(異なる拡張子): {}".format(self.url))

@@ -30,8 +30,8 @@ class Config:
                 preface="構成の解析中にエラーが発生しました:\n"
             )
 
-        self._confpreface = "An error has occured reading the config:\n"
-        self._confpreface2 = "An error has occured validating the config:\n"
+        self._confpreface = "設定の読み取り中にエラーが発生しました：\n"
+        self._confpreface2 = "設定の検証中にエラーが発生しました：\n"
 
         self._login_token = config.get('Credentials', 'Token', fallback=ConfigDefaults.token)
 
@@ -123,9 +123,9 @@ class Config:
 
         if not os.path.isfile(self.i18n_file):
             raise HelpfulError(
-                "Your i18n file was not found, and we could not fallback.",
-                "As a result, the bot cannot launch. Have you moved some files? "
-                "Try pulling the recent changes from Git, or resetting your local repo.",
+                "i18nファイルが見つからなかったため、フォールバックできませんでした。",
+                "その結果、ボットは起動できません。 いくつかのファイルを移動しましたか？ "
+                "Gitから最近の変更をプルするか、ローカルリポジトリをリセットしてください。",
                 preface=self._confpreface
             )
 
@@ -133,9 +133,9 @@ class Config:
 
         if not self._login_token:
             raise HelpfulError(
-                "No bot token was specified in the config.",
-                "As of v1.9.6_1, you are required to use a Discord bot account. "
-                "See https://github.com/Just-Some-Bots/MusicBot/wiki/FAQ for info.",
+                "設定にボットトークンが指定されていません。",
+                "Discordボットアカウントを使用する必要があります。"
+                "詳細については、https://github.com/Just-Some-Bots/MusicBot/wiki/FAQを参照してください。",
                 preface=self._confpreface
             )
 
@@ -150,9 +150,9 @@ class Config:
                     raise HelpfulError(
                         "無効なOwnerIDが設定されました: {}".format(self.owner_id),
 
-                        "Correct your OwnerID. The ID should be just a number, approximately "
-                        "18 characters long, or 'auto'. If you don't know what your ID is, read the "
-                        "instructions in the options or ask in the help server.",
+                        "OwnerIDを修正してください。 IDは単なる数字、約18文字の長さ、 "
+                        "または'auto'でなければなりません。 IDがわからない場合は、 "
+                        "オプションの指示を読むか、ヘルプサーバーに問い合わせてください。",
                         preface=self._confpreface
                     )
                 self.owner_id = int(self.owner_id)
@@ -165,8 +165,8 @@ class Config:
 
         if not self.owner_id:
             raise HelpfulError(
-                "No OwnerID was set.",
-                "Please set the OwnerID option in {}".format(self.config_file),
+                "OwnerIDは設定されていません。",
+                "{}でOwnerIDオプションを設定してください".format(self.config_file),
                 preface=self._confpreface
             )
 
@@ -238,26 +238,26 @@ class Config:
         if self.owner_id == 'auto':
             if not bot.user.bot:
                 raise HelpfulError(
-                    "Invalid parameter \"auto\" for OwnerID option.",
+                    "OwnerIDオプションのパラメーター\"auto\"が無効です。",
 
-                    "Only bot accounts can use the \"auto\" option.  Please "
-                    "set the OwnerID in the config.",
+                    "ボットアカウントのみが\"auto\"オプションを使用できます。"
+                    "configでOwnerIDを設定してください。",
 
                     preface=self._confpreface2
                 )
 
             self.owner_id = bot.cached_app_info.owner.id
-            log.debug("API経由で取得した所有者ID")
+            log.debug("API経由で取得したオーナーID")
 
         if self.owner_id == bot.user.id:
             raise HelpfulError(
-                "Your OwnerID is incorrect or you've used the wrong credentials.",
+                "OwnerIDが間違っているか、間違った資格情報を使用しました。",
 
-                "The bot's user ID and the id for OwnerID is identical. "
-                "This is wrong. The bot needs a bot account to function, "
-                "meaning you cannot use your own account to run the bot on. "
-                "The OwnerID is the id of the owner, not the bot. "
-                "Figure out which one is which and use the correct information.",
+                "ボットのユーザーIDとOwnerIDのIDは同一です。"
+                "これは間違っています。 ボットが機能するにはボットアカウントが必要です。 "
+                "つまり、自分のアカウントを使用してボットを実行することはできません。 "
+                "OwnerIDは、ボットではなくオーナーのIDです。 "
+                "どれがどれであるかを把握し、正しい情報を使用してください。",
 
                 preface=self._confpreface2
             )
@@ -300,7 +300,7 @@ class Config:
                     'OwnerIDの値「{}」が無効です。構成をロードできません。 '.format(
                         c.get('Permissions', 'OwnerID', fallback=None)
                     ),
-                    "The OwnerID option requires a user ID or 'auto'."
+                    "OwnerIDオプションには、ユーザーIDまたは'auto'が必要です。"
                 )
 
             except Exception as e:
